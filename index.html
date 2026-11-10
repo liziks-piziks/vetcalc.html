@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Калькулятор препаратов</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f6f8fa;
+      color: #1f2937;
+    }
+
+    main {
+      max-width: 760px;
+      margin: 24px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 26px;
+    }
+
+    .warning {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      font-weight: bold;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+
+    .result {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 10px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    button {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .small {
+      margin-top: 10px;
+      color: #64748b;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>Калькулятор препаратов</h1>
+
+    <div class="warning">
+      Для внутреннего использования врачами клиники.<br>
+      Перед применением обязательно сверить дозу, концентрацию, вид животного, противопоказания и инструкцию к препарату.
+    </div>
+
+    <label for="drug">Препарат</label>
+    <select id="drug"></select>
+
+    <label for="weight">Вес животного, кг</label>
+    <input id="weight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 5.2">
+
+    <label for="dose">Доза, мг/кг</label>
+    <input id="dose" type="number" min="0" step="0.1" inputmode="decimal">
+
+    <label for="conc">Концентрация, мг/мл</label>
+    <input id="conc" type="number" min="0" step="0.1" inputmode="decimal">
+
+    <label for="note">Примечание</label>
+    <textarea id="note"></textarea>
+
+    <div class="result" id="result">
+      Выберите препарат и введите вес.
+    </div>
+
+    <button id="copy" type="button">Скопировать расчёт</button>
+
+    <div class="small">
+      Формула: (Вес × Доза) / Концентрация.
+    </div>
+  </main>
+
+  <script>
+    // СПИСОК ПРЕПАРАТОВ
+    // Сюда потом добавите свои препараты.
+    const drugs = [
+      {
+        name: "— выбрать препарат —",
+        dose: "",
+        conc: "",
+        note: ""
+      },
+      {
+        name: "Пример: препарат 50 мг/мл",
+        dose: 5,
+        conc: 50,
+        note: "Пример примечания: проверить противопоказания, вид животного, анамнез."
+      }
+    ];
+
+    const drugEl = document.getElementById("drug");
+    const weightEl = document.getElementById("weight");
+    const doseEl = document.getElementById("dose");
+    const concEl = document.getElementById("conc");
+    const noteEl = document.getElementById("note");
+    const resultEl = document.getElementById("result");
+    const copyEl = document.getElementById("copy");
+
+    function formatMl(value) {
+      if (!Number.isFinite(value)) return "";
+      return value < 1 ? value.toFixed(3) : value.toFixed(2);
+    }
+
+    function fillDrugs() {
+      drugs.forEach((drug, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = drug.name;
+        drugEl.appendChild(option);
+      });
+    }
+
+    function setDrug() {
+      const drug = drugs[Number(drugEl.value)];
+
+      doseEl.value = drug.dose;
+      concEl.value = drug.conc;
+      noteEl.value = drug.note || "";
+
+      calculate();
+    }
+
+    function calculate() {
+      const weight = Number(weightEl.value);
+      const dose = Number(doseEl.value);
+      const conc = Number(concEl.value);
+
+      if (!weight || weight <= 0) {
+        resultEl.textContent = "Введите вес животного.";
+        return;
+      }
+
+      if (!dose || dose <= 0) {
+        resultEl.textContent = "Введите дозу, мг/кг.";
+        return;
+      }
+
+      if (!conc || conc <= 0) {
+        resultEl.textContent = "Введите концентрацию, мг/мл.";
+        return;
+      }
+
+      const totalMg = weight * dose;
+      const totalMl = totalMg / conc;
+
+      resultEl.innerHTML =
+        "Нужно: <b>" + formatMl(totalMl) + " мл</b><br>" +
+        "Разовая доза: <b>" + totalMg.toFixed(1) + " мг</b>";
+    }
+
+    async function copyResult() {
+      const drugName = drugs[Number(drugEl.value)].name;
+
+      const text =
+        drugName + "; " +
+        "вес " + (weightEl.value || "—") + " кг; " +
+        "доза " + (doseEl.value || "—") + " мг/кг; " +
+        "концентрация " + (concEl.value || "—") + " мг/мл; " +
+        "итог: " + resultEl.innerText.replace(/\n/g, "; ");
+
+      try {
+        await navigator.clipboard.writeText(text);
+        copyEl.textContent = "Скопировано";
+        setTimeout(() => {
+          copyEl.textContent = "Скопировать расчёт";
+        }, 1500);
+      } catch (e) {
+        alert(text);
+      }
+    }
+
+    fillDrugs();
+
+    drugEl.addEventListener("change", setDrug);
+    weightEl.addEventListener("input", calculate);
+    doseEl.addEventListener("input", calculate);
+    doseEl.addEventListener("change", calculate);
+    concEl.addEventListener("input", calculate);
+    concEl.addEventListener("change", calculate);
+    copyEl.addEventListener("click", copyResult);
+
+    setDrug();
+  </script>
+</body>
+</html>
