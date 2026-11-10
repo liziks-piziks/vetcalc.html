@@ -21,6 +21,11 @@ textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
 .small{color:#64748b;font-size:13px;margin-top:8px;line-height:1.5}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
 @media(max-width:600px){.grid{grid-template-columns:1fr}}
+.cb-wrap{position:relative;display:block}
+.cb-list{display:none;position:absolute;left:0;right:0;top:100%;z-index:30;max-height:250px;overflow-y:auto;background:#fff;border:1px solid #94a3b8;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,.18)}
+.cb-list.open{display:block}
+.cb-item{padding:9px 10px;cursor:pointer;font-size:14px;font-weight:normal}
+.cb-item.hl{background:#dbeafe}
 </style>
 </head>
 <body>
@@ -32,6 +37,7 @@ textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
 <button id="tabBtn2" onclick="openTab(2)">Болюсы</button>
 <button id="tabBtn3" onclick="openTab(3)">ИПС</button>
 <button id="tabBtn4" onclick="openTab(4)">Электролиты</button>
+<button id="tabBtn5" onclick="openTab(5)">Ушные капли</button>
 </div>
 
 <div id="page1" class="tab-page active">
@@ -45,17 +51,21 @@ textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
 
 <div id="page2" class="tab-page">
 <label>Вид животного<select id="bSpecies"><option value="dog">Собака</option><option value="cat">Кошка</option></select></label>
-<label>Препарат<select id="bDrug"></select></label>
+<label>Препарат
+<span class="cb-wrap"><input id="bDrugInput" type="text" placeholder="Клик — весь список; начни печатать — фильтр" autocomplete="off"><div id="bDrugList" class="cb-list"></div></span>
+</label>
 <label>Масса тела, кг<input id="bWeight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 4"></label>
 <label>Доза (мг/кг, мл/кг, ЕД/кг, мЭкв/кг, мкг/кг или фикс. на животное)<input id="bDose" type="number" min="0" step="0.01" inputmode="decimal"></label>
 <label id="bConcLabel">Концентрация (мг/мл, мг/таб, ЕД/мл, мЭкв/мл, мкг/мл)<input id="bConc" type="number" min="0" step="0.01" inputmode="decimal"></label>
 <label>Примечание<textarea id="bNote" readonly></textarea></label>
 <div class="result" id="res2">Выберите препарат и введите массу.</div>
-<div class="small">Позиции с пометкой «уточнить» отсутствуют в выгрузке skleroznik — сверьте с инструкцией. Фиксированные дозы (на животное) массу не требуют.</div>
+<div class="small">Клик по полю открывает список, печать сужает его (ищет и по примечаниям: напиши «рвота»). Стрелки ↑↓ + Enter — выбор с клавиатуры, Esc — закрыть. Позиции «уточнить» сверьте с инструкцией.</div>
 </div>
 
 <div id="page3" class="tab-page">
-<label>Препарат для ИПС<select id="ipsDrug"></select></label>
+<label>Препарат для ИПС
+<span class="cb-wrap"><input id="ipsDrugInput" type="text" placeholder="Клик — весь список; начни печатать — фильтр" autocomplete="off"><div id="ipsDrugList" class="cb-list"></div></span>
+</label>
 <div class="grid">
 <label>Масса тела, кг<input id="ipsWeight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 3"></label>
 <label>Целевая доза (ед. см. в названии)<input id="ipsDose" type="number" min="0" step="0.01" inputmode="decimal"></label>
@@ -65,7 +75,7 @@ textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
 <label>Скорость инфузомата, мл/ч<input id="ipsRate" type="number" min="0.1" step="0.1" inputmode="decimal" value="2"></label>
 <label>Примечание<textarea id="ipsNote" readonly></textarea></label>
 <div class="result" id="res3">Введите данные для расчёта ИПС.</div>
-<div class="small">Формула: (доза × кг × 60)/1000 = мг/ч (для мкг/кг/мин). Инотропы/вазопрессоры — только отдельный катетер или 3-х кранник, НЕ смешивать с изотониками. Шпаргалка титрования норадреналина из методички верна для разводки 1.2 мг в 20 мл на 20 кг; для других весов считайте здесь.</div>
+<div class="small">Формула: (доза × кг × 60)/1000 = мг/ч (для мкг/кг/мин). Инотропы/вазопрессоры — только отдельный катетер или 3-х кранник, НЕ смешивать с изотониками.</div>
 </div>
 
 <div id="page4" class="tab-page">
@@ -98,14 +108,22 @@ textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
 <div class="result" id="res4">Выберите ситуацию и введите данные.</div>
 <div class="small" id="eNote"></div>
 </div>
+<div id="page5" class="tab-page">
+<label>Нужный объём капель, мл<input id="uVol" type="number" min="1" step="0.5" value="10" inputmode="decimal"></label>
+<div id="uRows"></div>
+<button id="uAdd" type="button" style="margin-top:10px;padding:10px 14px;border:0;border-radius:8px;background:#2563eb;color:#fff;cursor:pointer">+ добавить компонент</button>
+<div class="result" id="res5">Укажите объём — расчёт автоматический.</div>
+<div class="small">Логика: действующие вещества сохраняют концентрацию базового рецепта (мл на 1 мл болтушки); выключенные компоненты и недостающий объём добирает разбавитель. Если снять галочку «разбавитель» — включённые компоненты масштабируются пропорционально. Рецепт редактируется прямо здесь; чтобы изменить рецепт клиники НАВСЕГДА — правь массив uRecipe в коде.</div>
+</div>
 </main>
 
 <script>
-function openTab(n){for(let i=1;i<=4;i++){document.getElementById('page'+i).classList.toggle('active',i===n);document.getElementById('tabBtn'+i).classList.toggle('active',i===n);}}
+function openTab(n){for(let i=1;i<=5;i++){document.getElementById('page'+i).classList.toggle('active',i===n);document.getElementById('tabBtn'+i).classList.toggle('active',i===n);}}
 function r1(x){return Math.round(x*10)/10}
 function r2(x){return Math.round(x*100)/100}
 function fmtVol(v){return v<1?v.toFixed(3):v.toFixed(2)}
 function fmtD(v){return v<10?v.toFixed(2):v.toFixed(1)}
+function fmtTab(v){return Math.round(v*100)/100}
 
 /* ===== ВКЛАДКА 1 ===== */
 const speciesEl=document.getElementById('species'),weightEl=document.getElementById('weight'),dehydEl=document.getElementById('dehyd'),lossesEl=document.getElementById('losses'),res1=document.getElementById('res1');
@@ -130,9 +148,9 @@ const bolusDrugs=[
 {name:'Фуросемид 40 мг/таб — перорально',dog:2,cat:2,unit:'mg/kg',conc:40,form:'tab',note:'2–4 мг/кг п/о 1 раз/48 ч или 3 р/сут при угрозе отека легких; сердечным — старт 2 мг/кг 2 р/сут.'},
 {name:'Димедрол 10 мг/мл — кожная форма анафилаксии',dog:1,cat:0.5,unit:'mg/kg',conc:10,form:'inj',note:'Собаки 1–2 мг/кг, кошки 0.5–1 мг/кг. Зуд, крапивница, отек морды, блефарит.'},
 {name:'Димедрол 10 мг/мл — тяжелая анафилаксия',dog:3,cat:1.5,unit:'mg/kg',conc:10,form:'inj',note:'Собаки 3–4 мг/кг, кошки 1.5–2 мг/кг ТОЛЬКО в/м. Бронхоспазм, отек слизистых, ларингоспазм.'},
-{name:'Дексаметазон 4 мг/мл',dog:0.1,cat:0.1,unit:'mg/kg',conc:4,form:'inj',note:'Методичка (анафилаксия, профилактика поздних проявлений): 0.1 мг/кг в/в или в/м. Skleroznik: противовоспалительная 0.01–0.16 мг/кг q24h; шок 0.5 мг/кг в/в; иммуносупрессия 0.3–0.64 мг/кг q24h. Гиперкальциемия: 0.1–0.22 мг/кг q12–24h.'},
+{name:'Дексаметазон 4 мг/мл',dog:0.1,cat:0.1,unit:'mg/kg',conc:4,form:'inj',note:'Методичка (анафилаксия): 0.1 мг/кг в/в или в/м. Skleroznik: противовоспалительная 0.01–0.16 мг/кг q24h; шок 0.5 мг/кг в/в; иммуносупрессия 0.3–0.64 мг/кг q24h. Гиперкальциемия: 0.1–0.22 мг/кг q12–24h.'},
 {name:'Преднизолон 30 мг/мл',dog:1,cat:1,unit:'mg/kg',conc:30,form:'inj',note:'Анафилаксия 1 мг/кг в/м или в/в. Гиперкальциемия 1–2.2 мг/кг q12h — ТОЛЬКО после цитологии/гистологии!'},
-{name:'Буторфанол 10 мг/мл (0.2%)',dog:0.2,cat:0.2,unit:'mg/kg',conc:10,form:'inj',note:'0.2–0.4 мг/кг в/м или в/в. Препарат выбора при кардиогенном шоке. Хорьки 0.25 мг/кг п/к.'},
+{name:'Буторфанол 10 мг/мл (0.2%)',dog:0.2,cat:0.2,unit:'mg/kg',conc:10,form:'inj',note:'0.2–0.4 мг/кг в/м или в/в. Препарат выбора при кардиогенном шоке.'},
 {name:'Кальция глюконат 10%',dog:0.5,cat:0.5,unit:'ml/kg',conc:0,form:'inj',note:'Гипокальциемия: 0.5–1 мл/кг в/в медленно, единожды, развести 1:10. Гиперкалиемия: 0.5–1 мл/кг (=50–100 мг/кг) >20 мин под ЭКГ. Гипермагниемия: за 15–30 мин + физостигмин.'},
 {name:'Глюкоза 40%',dog:1,cat:1,unit:'ml/kg',conc:0,form:'inj',note:'Гипогликемия: 1 мл/кг в/в. Контроль глюкозы каждые 15–20 мин. Нормы: собаки 4.0–8.0, кошки 4.0–14.0 ммоль/л.'},
 {name:'Инсулин короткий/ультракороткий 100 ЕД/мл — гиперкалиемия',dog:0.25,cat:0.25,unit:'ED/kg',conc:100,form:'inj',note:'0.25–0.5 ЕД/кг в/в + декстроза 1–2 г на 1 ЕД (развести до 5–20%), затем ИПС 2.5–5% декстрозы 4–6 ч.'},
@@ -153,7 +171,7 @@ const bolusDrugs=[
 {name:'Тразодон 50 мг/таб — собаки',dog:3,cat:null,unit:'mg/kg',conc:50,form:'tab',note:'3–7 мг/кг п/о при транспортировке. Протокольно спорно.'},
 {name:'Толваптан 15 мг/таб',dog:3,cat:3,unit:'mg/kg',conc:15,form:'tab',note:'3 мг/кг п/о каждые 12 ч (нормо- и гиперволемическая гипонатриемия).'},
 {name:'Физостигмин 1 мг/мл — гипермагниемия',dog:0.02,cat:0.02,unit:'mg/kg',conc:1,form:'inj',note:'0.02 мг/кг в/в. ТОЛЬКО в совокупности с кальция глюконатом 10%.'},
-{name:'Золедронат 0.05 мг/мл — гиперкальциемия',dog:0.1,cat:0.2,unit:'mg/kg',conc:0.05,form:'inj',note:'Собаки 0.1–0.25 мг/кг + 45–100 мл 0.9% NaCl за 15–30 мин. Кошки 0.2 мг/кг + 25 мл за 15 мин. Ca×P отношение >46.5 — риск резорбции.'},
+{name:'Золедронат 0.05 мг/мл — гиперкальциемия',dog:0.1,cat:0.2,unit:'mg/kg',conc:0.05,form:'inj',note:'Собаки 0.1–0.25 мг/кг + 45–100 мл 0.9% NaCl за 15–30 мин. Кошки 0.2 мг/кг + 25 мл за 15 мин. Ca×P >46.5 — риск резорбции.'},
 {name:'Памидронат 3 мг/мл — гиперкальциемия',dog:1.3,cat:1,unit:'mg/kg',conc:3,form:'inj',note:'Собаки 1.3–2 мг/кг + 150 мл 0.9% NaCl за 2–4 ч. Кошки 1–1.5 мг/кг.'},
 {name:'Атропин 1 мг/мл',dog:0.02,cat:0.02,unit:'mg/kg',conc:1,form:'inj',note:'Брадиаритмии 0.01–0.03 мг/кг в/в. Органофосфаты: 0.2–0.5 мг/кг (1/4 в/в, 3/4 в/м, п/к) до эффекта.'},
 {name:'Атипамезол 5 мг/мл — антагонист альфа-2',dog:null,cat:null,unit:'mcg/kg',conc:5000,form:'inj',note:'Собаки: доза мкг = дозе введенного медетомидина/дексмедетомидина (если >1 ч — половина). Кошки: в 2 раза меньше. Введите дозу вручную.'},
@@ -161,7 +179,6 @@ const bolusDrugs=[
 {name:'Этамзилат 125 мг/мл',dog:10,cat:10,unit:'mg/kg',conc:125,form:'inj',note:'10–15 мг/кг. Дозы эмпирические.'},
 {name:'Супрастин 20 мг/мл',dog:0.1,cat:0.1,unit:'ml/kg',conc:0,form:'inj',note:'Собаки: <10 кг — 0.1 мл/кг; 10–20 кг — 1 мл; >20 кг — 2 мл. Кошки 0.1 мл/кг. Другие источники: 0.2–0.3 мг/кг 2 р/д.'},
 {name:'Цетиризин 10 мг/таб',dog:1,cat:null,unit:'mg/kg',conc:10,form:'tab',note:'Собаки 1 мг/кг п/о 1 р/сут. Кошки: 5 мг на кошку 1 р/сут (введите фикс. дозу вручную). Слабо эффективен.'},
-/* --- skleroznik: А --- */
 {name:'Адеметионин (Гептрал) 500 мг/фл',dog:20,cat:20,unit:'mg/kg',conc:500,form:'inj',note:'20 мг/кг п/о или в/в q24h. Гепатопротектор. Разведённый раствор хранить ≤24 ч. Таблетки 400/500 мг.'},
 {name:'Ализин (агепристон) 30 мг/мл',dog:10,cat:15,unit:'mg/kg',conc:30,form:'inj',note:'Прерывание беременности п/к q24h ×2 (собаки 0–45 дн щенности, кошки 7–8 дн после спаривания). Пиометра: дни 1, 2, 7 (+14, 21 при плохом ответе). Кошки фиброаденоматоз: 20 мг/кг 1 р/7 дн.'},
 {name:'Азитромицин 250 мг/таб',dog:5,cat:5,unit:'mg/kg',conc:250,form:'tab',note:'5–10 мг/кг п/о q24h; после 3–5 дн можно q48h. Суспензия 20 или 40 мг/мл.'},
@@ -183,7 +200,6 @@ const bolusDrugs=[
 {name:'Афоксоланер (Нексгард) 68 мг/таб',dog:2.5,cat:null,unit:'mg/kg',conc:68,form:'tab',note:'От 2.5 мг/кг п/о 1 р/мес. Таблетки по весовым категориям.'},
 {name:'Афоксоланер+мильбемицин (Нексгард Спектра)',dog:2.5,cat:null,unit:'mg/kg',conc:37.5,form:'tab',note:'2.5 мг/кг по афоксоланеру + 0.5 мг/кг по мильбемицину 1 р/мес.'},
 {name:'Ацетилцистеин 100 мг/мл — отравление парацетамолом',dog:140,cat:140,unit:'mg/kg',conc:100,form:'inj',note:'140–280 мг/кг в 12–25 мл/кг 5% глюкозы в/в за 6 ч, затем ИПС 70 мг/кг q6h (≥7 доз). Или 150 старт, затем 50 мг/кг q4h ×17. Муколитик: 50 мг 2% р-ра небулайзер.'},
-/* --- Б, В --- */
 {name:'Бромгексин 8 мг/мл суспензия',dog:2,cat:1,unit:'mg/kg',conc:8,form:'inj',note:'Собаки 2 мг/кг п/о q12h; кошки 1 мг/кг q24h.'},
 {name:'Ванкомицин 500 мг/фл',dog:15,cat:12.5,unit:'mg/kg',conc:50,form:'inj',note:'Собаки 15 мг/кг в/в q6–8h; кошки 12–15 мг/кг q8h. АНТИБИОТИК РЕЗЕРВА.'},
 {name:'Винбластин 10 мг/фл',dog:2,cat:2,unit:'mg/kg',conc:10,form:'inj',note:'2–2.5 мг/кг в/в каждые 7–14 дн. Цитостатик.'},
@@ -192,12 +208,9 @@ const bolusDrugs=[
 {name:'Витамин B6 (пиридоксин) 50 мг/мл — изониазид',dog:71,cat:null,unit:'mg/kg',conc:50,form:'inj',note:'71 мг/кг в/в за 30–60 мин (если доза изониазида неизвестна); иначе 1 мг пиридоксина на 1 мг изониазида.'},
 {name:'Витамин B12 500 мкг/мл',dog:500,cat:125,unit:'mcg (fixed)',conc:500,form:'inj',note:'Собаки 0.25–1 мг (250–1000 мкг)/собаку п/к, в/м q7d 4 нед. Кошки 0.125–0.25 мг (125–250 мкг)/кошку q7d 4–6 нед.'},
 {name:'Витамин K1 10 мг/мл — зоокумарины',dog:2.5,cat:2.5,unit:'mg/kg',conc:10,form:'inj',note:'1-е пок.: старт 2.5 мг/кг п/к, в/м, затем 1–2.5 мг/кг п/о q8–12h 5–7 дн. 2-е пок.: старт 5 мг/кг, затем 2.5 мг/кг q12h 3 нед. Неизвестный: старт 2.5–5, затем 2.5 мг/кг 3–4 нед.'},
-/* --- Г --- */
 {name:'Габапентин 300 мг/капс',dog:20,cat:7.5,unit:'mg/kg',conc:300,form:'tab',note:'Собаки 10–60 мг/кг/сут в 2–3 приёма. Кошки 5–10 мг/кг q8–12h. Противосудорожное, нейропатическая боль, тревога.'},
 {name:'Гентамицин 40 мг/мл',dog:5,cat:5,unit:'mg/kg',conc:40,form:'inj',note:'4–8 мг/кг п/к, в/м, в/в дробно q8–24h. Нефротоксичен.'},
-/* --- Д --- */
 {name:'Десмопрессин — несахарный диабет',dog:null,cat:null,unit:'mg/kg',conc:0.1,form:'inj',note:'Доза по протоколу/инструкции (в методичке без цифр). Нормоволемическая гипернатриемия.'},
-/* --- С, Т, У, Ф, Х, Ц, Э --- */
 {name:'Сароланер (Симпарика) 40 мг/таб',dog:2,cat:null,unit:'mg/kg',conc:40,form:'tab',note:'2 мг/кг п/о 1 р/30 дн. При пограничном весе — большая дозировка.'},
 {name:'Селамектин (Стронгхолд) 60 мг/мл капли',dog:6,cat:6,unit:'mg/kg',conc:60,form:'inj',note:'От 6 мг/кг на холку. Блохи, отодектоз, саркоптоз, токсокароз, профилактика дирофиляриоза.'},
 {name:'Силденафил 25 мг/таб',dog:1,cat:null,unit:'mg/kg',conc:25,form:'tab',note:'0.5–2.7 мг/кг п/о 1–3 р/сут (медиана 3 мг/кг/сут). Лёгочная гипертензия.'},
@@ -210,7 +223,7 @@ const bolusDrugs=[
 {name:'Тербинафин 250 мг/таб',dog:20,cat:20,unit:'mg/kg',conc:250,form:'tab',note:'20–40 мг/кг п/о 1 р/сут (возможна пульс-терапия). Дерматофития.'},
 {name:'Тиамазол 2.5 мг/таб',dog:2.5,cat:2.5,unit:'mg (fixed)',conc:2.5,form:'tab',note:'Собаки 2.5–5 мг/собаку п/о 2 р/сут; кошки 2.5 мг/кошку 2 р/сут. Гипертиреоз.'},
 {name:'Тилозин 50 мг/мл',dog:5,cat:5,unit:'mg/kg',conc:50,form:'inj',note:'5–10 мг/кг в/м 1 р/сут.'},
-{name:'Трамадол 50 мг/мл',dog:3,cat:3,unit:'mg/kg',conc:50,form:'inj',note:'3 мг/кг в/м или в/в каждые 8–12 ч.'},
+{name:'Трамадол (Трамвет) 50 мг/мл',dog:3,cat:3,unit:'mg/kg',conc:50,form:'inj',note:'3 мг/кг в/м или в/в каждые 8–12 ч.'},
 {name:'Трилостан (Веторил) 30 мг/капс — собаки',dog:2,cat:null,unit:'mg/kg',conc:30,form:'tab',note:'2–5 мг/кг п/о 1 р/сут, старт с минимальной. Гиперадренокортицизм.'},
 {name:'Трилостан (Веторил) — кошки',dog:null,cat:30,unit:'mg (fixed)',conc:30,form:'tab',note:'30 мг на кошку п/о 1 р/сут.'},
 {name:'Тримебутин 100 мг/таб',dog:8,cat:8,unit:'mg/kg',conc:100,form:'tab',note:'8 мг/кг п/о 2–3 р/сут. Спазмолитик.'},
@@ -244,14 +257,22 @@ const bolusDrugs=[
 {name:'Метоклопрамид 5 мг/мл (уточнить)',dog:0.5,cat:0.5,unit:'mg/kg',conc:5,form:'inj',note:'0.5–1 мг/кг в/в, в/м, п/к q6–8h. Прокинетик, противорвотное.'},
 {name:'Ондансетрон 2 мг/мл (уточнить)',dog:0.5,cat:0.5,unit:'mg/kg',conc:2,form:'inj',note:'0.5–1 мг/кг в/в или п/о q8–12h. Тяжёлая рвота.'},
 {name:'Маропитант (Серения) 10 мг/мл (уточнить)',dog:1,cat:1,unit:'mg/kg',conc:10,form:'inj',note:'1 мг/кг п/к или в/в 1 р/сут. Антагонист NK-1.'},
-{name:'Омепразол 20 мг/таб (уточнить)',dog:0.5,cat:0.5,unit:'mg/kg',conc:20,form:'tab',note:'0.5–1 мг/кг п/о 1 р/сут. Ингибитор протонной помпы.'}
+{name:'Омепразол 20 мг/таб (уточнить)',dog:0.5,cat:0.5,unit:'mg/kg',conc:20,form:'tab',note:'0.5–1 мг/кг п/о 1 р/сут. Ингибитор протонной помпы.'},
+{name:'Амантадин 100 мг/таб',dog:3,cat:3,unit:'mg/kg',conc:100,form:'tab',note:'Собаки 3–5 мг/кг п/о 1 р/сут; кошки 3 мг/кг 1 р/24–48 ч. Адъювант при хронической/нейропатической боли, эффект к 7–10 дню. Кошкам доза мала на таблетку 100 мг — нужна аптечная суспензия.'}
 ];
-const bSpecies=document.getElementById('bSpecies'),bDrug=document.getElementById('bDrug'),bWeight=document.getElementById('bWeight'),bDose=document.getElementById('bDose'),bConc=document.getElementById('bConc'),bConcLabel=document.getElementById('bConcLabel'),bNote=document.getElementById('bNote'),res2=document.getElementById('res2');
+const bSpecies=document.getElementById('bSpecies'),bDrugInput=document.getElementById('bDrugInput'),bDrugList=document.getElementById('bDrugList'),bWeight=document.getElementById('bWeight'),bDose=document.getElementById('bDose'),bConc=document.getElementById('bConc'),bConcLabel=document.getElementById('bConcLabel'),bNote=document.getElementById('bNote'),res2=document.getElementById('res2');
 const unitLabel={'mg/kg':'мг','mcg/kg':'мкг','ED/kg':'ЕД','mEq/kg':'мЭкв','ml/kg':'мл','mg (fixed)':'мг','mcg (fixed)':'мкг'};
-bolusDrugs.forEach((d,i)=>{const o=document.createElement('option');o.value=i;o.textContent=d.name;bDrug.appendChild(o)});
-function fmtTab(v){return Math.round(v*100)/100}
-function bSet(){const d=bolusDrugs[Number(bDrug.value)];const dose=(bSpecies.value==='dog')?d.dog:d.cat;bDose.value=(dose===null||dose===undefined)?'':dose;bConc.value=d.conc||'';bConcLabel.style.display=(d.unit==='ml/kg')?'none':'block';bNote.value=d.note||'';bCalc()}
-function bCalc(){const d=bolusDrugs[Number(bDrug.value)];const kg=Number(bWeight.value),dose=Number(bDose.value),conc=Number(bConc.value);
+let bCurB=0;
+function renderBList(){const q=bDrugInput.value.toLowerCase().trim();bDrugList.innerHTML='';bolusDrugs.forEach((d,i)=>{if(q&&(d.name+' '+d.note).toLowerCase().indexOf(q)<0)return;const div=document.createElement('div');div.className='cb-item';div.dataset.i=i;div.textContent=d.name;bDrugList.appendChild(div)});if(!bDrugList.children.length){const div=document.createElement('div');div.className='cb-item';div.textContent='— ничего не найдено —';bDrugList.appendChild(div)}bDrugList.classList.add('open')}
+function selectB(i){bCurB=i;bDrugInput.value=bolusDrugs[i].name;bDrugList.classList.remove('open');bSet()}
+bDrugInput.addEventListener('focus',()=>{bDrugInput.select();renderBList()});
+bDrugInput.addEventListener('input',renderBList);
+bDrugInput.addEventListener('blur',()=>setTimeout(()=>bDrugList.classList.remove('open'),120));
+bDrugList.addEventListener('mousedown',e=>{const t=e.target.closest('.cb-item');if(t&&t.dataset.i!==undefined){e.preventDefault();selectB(Number(t.dataset.i))}});
+bDrugList.addEventListener('mouseover',e=>{bDrugList.querySelectorAll('.cb-item.hl').forEach(el=>el.classList.remove('hl'));const t=e.target.closest('.cb-item');if(t)t.classList.add('hl')});
+bDrugInput.addEventListener('keydown',e=>{const items=bDrugList.querySelectorAll('.cb-item[data-i]');if(e.key==='Escape'){bDrugList.classList.remove('open');return}if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!bDrugList.classList.contains('open'))renderBList();const hl=bDrugList.querySelector('.cb-item.hl');let idx=-1;items.forEach((el,j)=>{if(el.classList.contains('hl'))idx=j});let n=idx+(e.key==='ArrowDown'?1:-1);if(n<0)n=items.length-1;if(n>=items.length)n=0;if(items[n]){bDrugList.querySelectorAll('.cb-item.hl').forEach(el=>el.classList.remove('hl'));items[n].classList.add('hl');items[n].scrollIntoView({block:'nearest'})}return}if(e.key==='Enter'){e.preventDefault();const hl=bDrugList.querySelector('.cb-item.hl');if(hl&&hl.dataset.i!==undefined){selectB(Number(hl.dataset.i))}else if(items.length){selectB(Number(items[0].dataset.i))}}});
+function bSet(){const d=bolusDrugs[bCurB];if(!d){bNote.value='';res2.textContent='Препарат не выбран.';return}const dose=(bSpecies.value==='dog')?d.dog:d.cat;bDose.value=(dose===null||dose===undefined)?'':dose;bConc.value=d.conc||'';bConcLabel.style.display=(d.unit==='ml/kg')?'none':'block';bNote.value=d.note||'';bCalc()}
+function bCalc(){const d=bolusDrugs[bCurB];if(!d){res2.textContent='Препарат не выбран.';return}const kg=Number(bWeight.value),dose=Number(bDose.value),conc=Number(bConc.value);
 if(d.unit!=='mg (fixed)'&&d.unit!=='mcg (fixed)'&&(!kg||kg<=0)){res2.textContent='Введите массу тела.';return}
 if(!dose||dose<=0){res2.textContent='Введите дозу (диапазоны и схемы — в примечании).';return}
 if(d.unit==='ml/kg'){res2.innerHTML='Объём на введение: <b>'+fmtVol(kg*dose)+' мл</b>';return}
@@ -260,37 +281,59 @@ const total=(d.unit.indexOf('fixed')>=0)?dose:kg*dose;const vol=total/conc;const
 if(d.form==='tab'){res2.innerHTML='Доза на приём: <b>'+fmtD(total)+' '+u+'</b><br>Таблетки/капсулы: <b>'+fmtTab(vol)+' таб</b>'}
 else{res2.innerHTML='Доза на введение: <b>'+fmtD(total)+' '+u+'</b><br>Объём: <b>'+fmtVol(vol)+' мл</b>'}}
 [bSpecies,bWeight,bDose,bConc].forEach(el=>{el.addEventListener('input',bCalc);el.addEventListener('change',bCalc)});
-bDrug.addEventListener('change',bSet);bSet();
+selectB(0);
 
 /* ===== ВКЛАДКА 3: ИПС ===== */
 const ipsDrugs=[
 {name:'Норадреналин 1 мг/мл — мкг/кг/мин',dose:0.1,conc:1,unit:'mcg/kg/min',note:'Старт 0.1–0.5 мкг/кг/мин (кошки с 0.1), до 2 мкг/кг/мин. Рефрактерный шок, САД <65 мм рт.ст. Отдельный катетер/3-х кранник!'},
 {name:'Адреналин 1 мг/мл — мкг/кг/мин (анафилаксия)',dose:0.05,conc:1,unit:'mcg/kg/min',note:'0.05 мкг/кг/мин, старт 1 мл/ч. После болюсов анафилаксии.'},
 {name:'Добутамин 12.5 мг/мл — мкг/кг/мин',dose:5,conc:12.5,unit:'mcg/kg/min',note:'5–15 мкг/кг/мин. Противопоказан кошкам с обструктивной ГКМП.'},
-{name:'Лидокаин 20 мг/мл — собаки, мкг/кг/мин',dose:50,conc:20,unit:'mcg/kg/min',note:'50–75 мкг/кг/мин после болюса 2 мг/кг в/в медленно.'},
+{name:'Вазопрессин 20 ЕД/мл — ЕД/кг/ч (сверить)',dose:0.03,conc:20,unit:'ED/kg/h',note:'0.5–1 мЕД/кг/мин = 0.03–0.06 ЕД/кг/ч. Резервный вазопрессор при рефрактерном шоке.'},
+{name:'Эсмолол 10 мг/мл — мкг/кг/мин (сверить)',dose:10,conc:10,unit:'mcg/kg/min',note:'10–50 мкг/кг/мин после болюса 250–500 мкг/кг. НЖТ, ГКМП кошек с динамической обструкцией.'},
+{name:'Лидокаин 20 мг/мл — собаки, мкг/кг/мин (аритмия)',dose:50,conc:20,unit:'mcg/kg/min',note:'50–75 мкг/кг/мин после болюса 2 мг/кг в/в медленно.'},
+{name:'Лидокаин 20 мг/мл — собаки, мкг/кг/мин (анальгезия)',dose:30,conc:20,unit:'mcg/kg/min',note:'25–50 мкг/кг/мин как анальгетическая ИПС.'},
 {name:'Лидокаин 20 мг/мл — кошки, мкг/кг/мин',dose:10,conc:20,unit:'mcg/kg/min',note:'10–20 мкг/кг/мин после болюса 0.2–0.5 мг/кг медленно.'},
+{name:'Трамвет (трамадол) 50 мг/мл — мг/кг/ч',dose:2,conc:50,unit:'mg/kg/h',note:'ИПС 1.5–2 мг/кг/ч (собаки). Сверьте со своим протоколом клиники.'},
+{name:'Ондансетрон 2 мг/мл — мг/кг/сут',dose:1,conc:2,unit:'mg/kg/day',note:'0.5–1 мг/кг/сут ИПС при неукротимой рвоте; альтернатива болюсам 0.5–1 мг/кг q8–12h. Сверьте с протоколом клиники.'},
 {name:'Фуросемид 10 мг/мл — мг/кг/ч',dose:0.5,conc:10,unit:'mg/kg/h',note:'ИПС 0.2–1 мг/кг/ч ПОСЛЕ болюса 0.5–1 мг/кг. Кардиогенный отек легких.'},
 {name:'KCl 4% (0.54 мЭкв/мл) — мЭкв/кг/ч',dose:0.5,conc:0.54,unit:'mEq/kg/h',note:'МАКСИМУМ 0.5 ммоль/кг/ч. Периферия: ≤40–60 мЭкв/л. См. вкладку Электролиты.'},
 {name:'Магния сульфат 25% (2 мЭкв/мл) — мЭкв/кг/ч',dose:0.03,conc:2,unit:'mEq/kg/h',note:'Дефицит 1–2 сут: 0.03–0.04 мЭкв/кг/ч. Поддержка: 0.013–0.02 мЭкв/кг/ч.'},
 {name:'Кальция глюконат 10% — мл/кг/ч',dose:0.5,conc:0,unit:'ml/kg/h',note:'0.5–1 мл/кг/ч на 3–4 ч (разведение 1:5 или 1:10); после болюса 0.25–0.5 мл/кг/ч в почасовой потребности NaCl.'},
-{name:'NaCl 3% — мл/кг/ч (гипонатриемия)',dose:1,conc:0,unit:'ml/kg/h',note:'0.5–2 мл/кг/ч первые 48 ч. Коррекция ≤0.5 мЭкв/л/ч, ≤10–12 мЭкв/л/сут.'}
+{name:'NaCl 3% — мл/кг/ч (гипонатриемия)',dose:1,conc:0,unit:'ml/kg/h',note:'0.5–2 мл/кг/ч первые 48 ч. Коррекция ≤0.5 мЭкв/л/ч, ≤10–12 мЭкв/л/сут.'},
+{name:'Инсулин короткий 100 ЕД/мл — ЕД/кг/ч (ДКА)',dose:0.05,conc:100,unit:'ED/kg/h',note:'0.05–0.1 ЕД/кг/ч после старта инфузии. Или протокол: 2.2 ЕД/кг в 250 мл NaCl 0.9%, линию промыть. Глюкоза q1–3 ч.'},
+{name:'Метоклопрамид 5 мг/мл — мг/кг/сут',dose:1,conc:5,unit:'mg/kg/day',note:'1–2 мг/кг/сут ИПС (≈0.04–0.08 мг/кг/ч). Неукротимая рвота, прокинетик.'},
+{name:'Дексмедетомидин 500 мкг/мл — мкг/кг/ч',dose:1,conc:0.5,unit:'mcg/kg/h',note:'Собаки 1–2 мкг/кг/ч, кошки 0.5–1 мкг/кг/ч после болюса. Концентрация в поле мг/мл: 0.5.'},
+{name:'Буторфанол 10 мг/мл — мг/кг/ч',dose:0.1,conc:10,unit:'mg/kg/h',note:'0.1–0.2 мг/кг/ч после болюса 0.1–0.2 мг/кг в/в.'},
+{name:'Диазепам 5 мг/мл — мг/кг/ч (статус эпилептикус)',dose:0.5,conc:5,unit:'mg/kg/h',note:'0.5–1 мг/кг/ч после болюса 0.5 мг/кг в/в. Оставлено для статусов — скажи, если убрать.'}
 ];
-const ipsDrug=document.getElementById('ipsDrug'),ipsWeight=document.getElementById('ipsWeight'),ipsDose=document.getElementById('ipsDose'),ipsConc=document.getElementById('ipsConc'),ipsSyringe=document.getElementById('ipsSyringe'),ipsRate=document.getElementById('ipsRate'),ipsNote=document.getElementById('ipsNote'),res3=document.getElementById('res3');
-ipsDrugs.forEach((d,i)=>{const o=document.createElement('option');o.value=i;o.textContent=d.name;ipsDrug.appendChild(o)});
-function ipsSet(){const d=ipsDrugs[Number(ipsDrug.value)];ipsDose.value=d.dose;ipsConc.value=d.conc||'';ipsNote.value=d.note||'';ipsCalc()}
-function ipsCalc(){const d=ipsDrugs[Number(ipsDrug.value)];const kg=Number(ipsWeight.value),dose=Number(ipsDose.value),conc=Number(ipsConc.value),syr=Number(ipsSyringe.value),rate=Number(ipsRate.value);
+const ipsDrugInput=document.getElementById('ipsDrugInput'),ipsDrugList=document.getElementById('ipsDrugList'),ipsWeight=document.getElementById('ipsWeight'),ipsDose=document.getElementById('ipsDose'),ipsConc=document.getElementById('ipsConc'),ipsSyringe=document.getElementById('ipsSyringe'),ipsRate=document.getElementById('ipsRate'),ipsNote=document.getElementById('ipsNote'),res3=document.getElementById('res3');
+let iCur=0;
+function renderIList(){const q=ipsDrugInput.value.toLowerCase().trim();ipsDrugList.innerHTML='';ipsDrugs.forEach((d,i)=>{if(q&&(d.name+' '+d.note).toLowerCase().indexOf(q)<0)return;const div=document.createElement('div');div.className='cb-item';div.dataset.i=i;div.textContent=d.name;ipsDrugList.appendChild(div)});if(!ipsDrugList.children.length){const div=document.createElement('div');div.className='cb-item';div.textContent='— ничего не найдено —';ipsDrugList.appendChild(div)}ipsDrugList.classList.add('open')}
+function selectI(i){iCur=i;ipsDrugInput.value=ipsDrugs[i].name;ipsDrugList.classList.remove('open');ipsSet()}
+ipsDrugInput.addEventListener('focus',()=>{ipsDrugInput.select();renderIList()});
+ipsDrugInput.addEventListener('input',renderIList);
+ipsDrugInput.addEventListener('blur',()=>setTimeout(()=>ipsDrugList.classList.remove('open'),120));
+ipsDrugList.addEventListener('mousedown',e=>{const t=e.target.closest('.cb-item');if(t&&t.dataset.i!==undefined){e.preventDefault();selectI(Number(t.dataset.i))}});
+ipsDrugList.addEventListener('mouseover',e=>{ipsDrugList.querySelectorAll('.cb-item.hl').forEach(el=>el.classList.remove('hl'));const t=e.target.closest('.cb-item');if(t)t.classList.add('hl')});
+ipsDrugInput.addEventListener('keydown',e=>{const items=ipsDrugList.querySelectorAll('.cb-item[data-i]');if(e.key==='Escape'){ipsDrugList.classList.remove('open');return}if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!ipsDrugList.classList.contains('open'))renderIList();let idx=-1;items.forEach((el,j)=>{if(el.classList.contains('hl'))idx=j});let n=idx+(e.key==='ArrowDown'?1:-1);if(n<0)n=items.length-1;if(n>=items.length)n=0;if(items[n]){ipsDrugList.querySelectorAll('.cb-item.hl').forEach(el=>el.classList.remove('hl'));items[n].classList.add('hl');items[n].scrollIntoView({block:'nearest'})}return}if(e.key==='Enter'){e.preventDefault();const hl=ipsDrugList.querySelector('.cb-item.hl');if(hl&&hl.dataset.i!==undefined){selectI(Number(hl.dataset.i))}else if(items.length){selectI(Number(items[0].dataset.i))}}});
+function ipsSet(){const d=ipsDrugs[iCur];if(!d){ipsNote.value='';res3.textContent='Препарат не выбран.';return}ipsDose.value=d.dose;ipsConc.value=d.conc||'';ipsNote.value=d.note||'';ipsCalc()}
+function ipsCalc(){const d=ipsDrugs[iCur];if(!d){res3.textContent='Препарат не выбран.';return}const kg=Number(ipsWeight.value),dose=Number(ipsDose.value),conc=Number(ipsConc.value),syr=Number(ipsSyringe.value),rate=Number(ipsRate.value);
 if(!kg||kg<=0){res3.textContent='Введите массу тела.';return}
 if(!dose||dose<=0){res3.textContent='Введите целевую дозу.';return}
 if(!rate||rate<=0){res3.textContent='Введите скорость инфузомата.';return}
 if(d.unit==='ml/kg/h'){const pump=dose*kg;res3.innerHTML='Скорость на инфузомате: <b>'+r1(pump)+' мл/ч</b> ('+dose+' мл/кг/ч × '+kg+' кг)<br>За 24 ч: <b>'+r1(pump*24)+' мл</b>';return}
 let perHour;
-if(d.unit==='mcg/kg/min'){perHour=(dose*kg*60)/1000}else if(d.unit==='mg/kg/h'){perHour=dose*kg}else{perHour=dose*kg}
+if(d.unit==='mcg/kg/min'){perHour=(dose*kg*60)/1000}
+else if(d.unit==='mcg/kg/h'){perHour=(dose*kg)/1000}
+else if(d.unit==='mg/kg/day'){perHour=(dose*kg)/24}
+else{perHour=dose*kg}
 if(!(conc>0)){res3.textContent='Введите концентрацию ампулы.';return}
-const hours=syr/rate,totalMg=perHour*hours,ampMl=totalMg/conc,dil=syr-ampMl;
+const hours=syr/rate,total=perHour*hours,ampMl=total/conc,dil=syr-ampMl;
 if(ampMl>syr){res3.innerHTML='<b>Ошибка:</b> нужный объём препарата ('+fmtVol(ampMl)+' мл) больше объёма шприца. Увеличьте шприц или скорость.';return}
-res3.innerHTML='Потребность: <b>'+perHour.toFixed(3)+' мг/ч</b> ('+(d.unit==='mEq/kg/h'?perHour.toFixed(3)+' мЭкв/ч':'')+')<br>Время работы шприца: <b>'+hours.toFixed(1)+' ч</b><br>Всего препарата: <b>'+totalMg.toFixed(2)+' мг</b><br>Из ампулы: <b>'+fmtVol(ampMl)+' мл</b><br>Развести до '+syr+' мл: добавить <b>'+r1(dil)+' мл</b> NaCl 0.9% или глюкозы 5%<br>Скорость инфузомата: <b>'+rate+' мл/ч</b>'}
+const uName={'mcg/kg/min':'мг','mcg/kg/h':'мг','mg/kg/h':'мг','mg/kg/day':'мг','mEq/kg/h':'мЭкв','ED/kg/h':'ЕД'}[d.unit];
+res3.innerHTML='Потребность: <b>'+perHour.toFixed(3)+' '+uName+'/ч</b><br>Время работы шприца: <b>'+hours.toFixed(1)+' ч</b><br>Всего препарата: <b>'+total.toFixed(2)+' '+uName+'</b><br>Из ампулы: <b>'+fmtVol(ampMl)+' мл</b><br>Развести до '+syr+' мл: добавить <b>'+r1(dil)+' мл</b> NaCl 0.9% или глюкозы 5%<br>Скорость инфузомата: <b>'+rate+' мл/ч</b>'}
 [ipsWeight,ipsDose,ipsConc,ipsSyringe,ipsRate].forEach(el=>{el.addEventListener('input',ipsCalc);el.addEventListener('change',ipsCalc)});
-ipsDrug.addEventListener('change',ipsSet);ipsSet();
+selectI(0);
 
 /* ===== ВКЛАДКА 4: ЭЛЕКТРОЛИТЫ ===== */
 const eSit=document.getElementById('eSit'),eWeight=document.getElementById('eWeight'),eSpecies=document.getElementById('eSpecies'),eK=document.getElementById('eK'),eNaCur=document.getElementById('eNaCur'),eNaT=document.getElementById('eNaT'),eHydr=document.getElementById('eHydr'),eCaD=document.getElementById('eCaD'),eKSel=document.getElementById('eKSel'),eFlask=document.getElementById('eFlask'),eRate4=document.getElementById('eRate'),eHours=document.getElementById('eHours'),eMgD=document.getElementById('eMgD'),eSol=document.getElementById('eSol'),res4=document.getElementById('res4'),eNote=document.getElementById('eNote');
@@ -304,7 +347,7 @@ const maxM=0.5*kg,maxMl=maxM/0.54;
 let h=0;if(K>=3&&K<=3.5)h=4;else if(K>=2.5&&K<3)h=7;else if(K>=2&&K<2.5)h=8;
 out='Макс. скорость KCl: <b>'+r2(maxM)+' мЭкв/ч</b> (0.5 ммоль/кг/ч) = <b>'+r1(maxMl)+' мл/ч KCl 4%</b><br>';
 if(h>0){const kcl=0.8*kg*h,tot=kcl*2,pump=tot/h;
-out+='Метод Кикоть (болюс в яремную): K '+K+' ммоль/л → длительность <b>'+h+' ч</b><br>KCl 4%: 0.8 мл/кг/ч × '+kg+' кг × '+h+' ч = <b>'+r1(kcl)+' мл</b><br>Разведение 1:1 с NaCl 0.9%: итого <b>'+r1(tot)+' мл</b><br>Скорость инфузомата: <b>'+r1(pump)+' мл/ч</b><br>Концентрация в 50 мл шприце: '+r2(kcl*0.54/0.05)+' мЭкв/л (норма периферии 40–60)'}
+out+='Метод Кикоть (болюс в яремную): K '+K+' ммоль/л → длительность <b>'+h+' ч</b><br>KCl 4%: 0.8 мл/кг/ч × '+kg+' кг × '+h+' ч = <b>'+r1(kcl)+' мл</b><br>Разведение 1:1 с NaCl 0.9%: итого <b>'+r1(tot)+' мл</b><br>Скорость инфузомата: <b>'+r1(pump)+' мл/ч</b>'}
 else{out+='Для K вне диапазона 2.0–3.5 ммоль/л метод Кикоть не применим — считайте периферическую ИПС по макс. скорости.'}
 eNote.textContent='1 мЭкв K = 1 ммоль = 39.1 мг. KCl 4%: 1 мл = 0.54 мЭкв. Таблица Кикоть: K 3.0–3.5 → 4 ч; 2.5–3.0 → 6–8 ч; 2.0–2.5 → 8 ч.'}
 else if(s==='hyperK'){out='1) Кальция глюконат 10%: <b>'+r1(0.5*kg)+'–'+r1(1*kg)+' мл</b> в/в >20 мин, развести в физрастворе, под ЭКГ<br>2) Инсулин короткий: <b>'+r2(0.25*kg)+'–'+r2(0.5*kg)+' ЕД</b> в/в<br>3) Декстроза: <b>'+r1(1*0.25*kg)+'–'+r1(2*0.5*kg)+' г</b> (1–2 г на 1 ЕД), развести до 5–20%, затем ИПС 2.5–5% декстрозы 4–6 ч<br>4) ИПС изотоником по статусу (см. ниже)';
@@ -346,6 +389,65 @@ eNote.textContent='Пороги: собаки общий Mg >2.51 мг/дл (с�
 res4.innerHTML=out}
 [eSit,eWeight,eSpecies,eK,eNaCur,eNaT,eHydr,eCaD,eKSel,eFlask,eRate4,eHours,eMgD,eSol].forEach(el=>{el.addEventListener('input',eCalc);el.addEventListener('change',eShow)});
 eShow();
+/* ===== ВКЛАДКА 5: УШНЫЕ КАПЛИ ===== */
+let uRecipe=[
+{name:'NaCl 0.9%',base:4,diluent:true,inc:true},
+{name:'Дексаметазон',base:2,diluent:false,inc:true},
+{name:'Клотримазол',base:2,diluent:false,inc:true},
+{name:'Гентамицин',base:2,diluent:false,inc:true}
+];
+const uRows=document.getElementById('uRows'),uVol=document.getElementById('uVol'),res5=document.getElementById('res5'),uAdd=document.getElementById('uAdd');
+function renderU(){
+uRows.innerHTML='';
+uRecipe.forEach((r,i)=>{
+const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap';
+const nm=document.createElement('input');nm.type='text';nm.value=r.name;nm.style.cssText='flex:1;min-width:140px';
+const bs=document.createElement('input');bs.type='number';bs.min='0';bs.step='0.5';bs.value=r.base;bs.style.width='90px';bs.title='Базовый объём, мл';
+const lInc=document.createElement('label');lInc.style.cssText='margin:0;font-weight:normal;font-size:14px;display:flex;gap:4px;align-items:center';
+const inc=document.createElement('input');inc.type='checkbox';inc.checked=r.inc;inc.style.width='auto';inc.disabled=r.diluent;
+lInc.appendChild(inc);lInc.appendChild(document.createTextNode('входит'));
+const lDil=document.createElement('label');lDil.style.cssText=lInc.style.cssText;
+const dil=document.createElement('input');dil.type='checkbox';dil.checked=r.diluent;dil.style.width='auto';
+lDil.appendChild(dil);lDil.appendChild(document.createTextNode('разбавитель'));
+const del=document.createElement('button');del.type='button';del.textContent='×';del.style.cssText='border:0;background:#fee2e2;color:#b91c1c;border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:16px';
+nm.addEventListener('input',()=>{r.name=nm.value;calcU()});
+bs.addEventListener('input',()=>{r.base=Number(bs.value)||0;calcU()});
+inc.addEventListener('change',()=>{r.inc=inc.checked;calcU()});
+dil.addEventListener('change',()=>{if(dil.checked){uRecipe.forEach(x=>x.diluent=false);r.diluent=true;r.inc=true}else{r.diluent=false}renderU();calcU()});
+del.addEventListener('click',()=>{uRecipe.splice(i,1);renderU();calcU()});
+row.appendChild(nm);row.appendChild(bs);row.appendChild(lInc);row.appendChild(lDil);row.appendChild(del);
+uRows.appendChild(row);
+});
+}
+function calcU(){
+const V=Number(uVol.value);
+if(!V||V<=0){res5.textContent='Укажите нужный объём.';return}
+const baseTotal=uRecipe.reduce((s,r)=>s+(Number(r.base)||0),0);
+if(baseTotal<=0){res5.textContent='Базовый рецепт пуст.';return}
+const dilIdx=uRecipe.findIndex(r=>r.diluent);
+let out='',sum=0;
+if(dilIdx>=0){
+const act=uRecipe.filter(r=>r.inc&&!r.diluent);
+let actSum=0;const lines=[];
+act.forEach(r=>{const v=r.base/baseTotal*V;actSum+=v;lines.push(r.name+': <b>'+r2(v)+' мл</b> ('+r2(r.base/baseTotal)+' мл на 1 мл болтушки)')});
+const dilV=V-actSum;
+if(dilV<0){res5.innerHTML='<b>Ошибка:</b> объём включённых компонентов ('+r2(actSum)+' мл) больше нужного объёма. Увеличьте объём или уберите компоненты.';return}
+out=lines.join('<br>')+'<br>'+uRecipe[dilIdx].name+' (разбавитель): <b>'+r2(dilV)+' мл</b>';
+sum=actSum+dilV;
+uRecipe.forEach(r=>{if(!r.inc&&!r.diluent)out+='<br><span style="color:#64748b">'+r.name+' — исключён (замещён разбавителем)</span>'});
+}else{
+const incR=uRecipe.filter(r=>r.inc);
+const incB=incR.reduce((s,r)=>s+(Number(r.base)||0),0);
+if(incB<=0){res5.textContent='Нет включённых компонентов.';return}
+incR.forEach(r=>{const v=r.base/incB*V;sum+=v;out+=(out?'<br>':'')+r.name+': <b>'+r2(v)+' мл</b>'});
+out+='<br><span style="color:#64748b">Без разбавителя: компоненты масштабированы пропорционально.</span>';
+}
+out+='<br>Проверка: итого = <b>'+r2(sum)+' мл</b>';
+res5.innerHTML=out;
+}
+uAdd.addEventListener('click',()=>{uRecipe.push({name:'Новый компонент',base:1,diluent:false,inc:true});renderU();calcU()});
+uVol.addEventListener('input',calcU);
+renderU();calcU();
 </script>
 </body>
 </html>
