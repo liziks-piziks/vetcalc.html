@@ -15,7 +15,8 @@
     .tab-page{display:none}
     .tab-page.active{display:block}
     label{display:block;margin:12px 0 6px;font-weight:bold}
-    input,select{width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:16px}
+    input,select,textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:16px}
+    textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
     .result{margin-top:16px;padding:14px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;font-size:16px;line-height:1.6}
     .small{color:#64748b;font-size:13px;margin-top:8px}
   </style>
@@ -33,10 +34,7 @@
 
   <div id="page1" class="tab-page active">
     <label>Вид животного
-      <select id="species">
-        <option value="dog">Собака</option>
-        <option value="cat">Кошка</option>
-      </select>
+      <select id="species"><option value="dog">Собака</option><option value="cat">Кошка</option></select>
     </label>
     <label>Масса тела, кг <input id="weight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 20"></label>
     <label>Обезвоживание, % <input id="dehyd" type="number" min="0" step="0.5" inputmode="decimal" placeholder="0, если нет"></label>
@@ -46,11 +44,22 @@
   </div>
 
   <div id="page2" class="tab-page">
-    <div class="result">Раздел в разработке: список болюсных препаратов из методички появится в следующем обновлении.</div>
+    <label>Вид животного
+      <select id="bSpecies"><option value="dog">Собака</option><option value="cat">Кошка</option></select>
+    </label>
+    <label>Препарат
+      <select id="bDrug"></select>
+    </label>
+    <label>Масса тела, кг <input id="bWeight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 4"></label>
+    <label>Доза (на кг или фиксированная) <input id="bDose" type="number" min="0" step="0.01" inputmode="decimal"></label>
+    <label id="bConcLabel">Концентрация (мг/мл, мг/таб, ЕД/мл, мЭкв/мл) <input id="bConc" type="number" min="0" step="0.01" inputmode="decimal"></label>
+    <label>Примечание <textarea id="bNote" readonly></textarea></label>
+    <div class="result" id="res2">Выберите препарат и введите массу.</div>
+    <div class="small">Дозы и концентрации подставляются из методички, но остаются редактируемыми: всегда сверяйте с инструкцией к вашему препарату.</div>
   </div>
 
   <div id="page3" class="tab-page">
-    <div class="result">Раздел в разработке: расчёт ИПС (норадреналин, добутамин, лидокаин, KCl) появится позже.</div>
+    <div class="result">Раздел в разработке: расчёт ИПС (норадреналин, добутамин, лидокаин, KCl, фуросемид) появится в следующем обновлении.</div>
   </div>
 </main>
 
@@ -62,6 +71,7 @@ function openTab(n){
   }
 }
 
+/* ---------- ВКЛАДКА 1: ИНФУЗИОННАЯ ТЕРАПИЯ ---------- */
 const speciesEl=document.getElementById('species');
 const weightEl=document.getElementById('weight');
 const dehydEl=document.getElementById('dehyd');
@@ -75,14 +85,12 @@ function calcInfusion(){
   if(!kg||kg<=0){res1.textContent='Введите массу тела.';return}
   const dehyd=Number(dehydEl.value)||0;
   const losses=Number(lossesEl.value)||0;
-
   const maintenance=kg*30+70;
   const deficit=kg*dehyd*10;
   const daily=maintenance+deficit+losses;
   const rate=daily/24;
   const allo=(speciesEl.value==='dog'?132:80)*Math.pow(kg,0.75)/24;
   const bolus=speciesEl.value==='dog'?[15*kg,20*kg,'10–15 мин']:[5*kg,10*kg,'15–20 мин'];
-
   res1.innerHTML=
     'Поддержка: <b>'+r1(maintenance)+' мл/сут</b><br>'+
     'Дефицит ('+dehyd+'%): <b>'+r1(deficit)+' мл</b><br>'+
@@ -92,12 +100,106 @@ function calcInfusion(){
     'Шоковый болюс: <b>'+r1(bolus[0])+'–'+r1(bolus[1])+' мл</b> за '+bolus[2]+'<br>'+
     'Микроболюс (сердечники): <b>'+r1(kg)+'–'+r1(3*kg)+' мл</b>';
 }
-
 [speciesEl,weightEl,dehydEl,lossesEl].forEach(el=>{
   el.addEventListener('input',calcInfusion);
   el.addEventListener('change',calcInfusion);
 });
 calcInfusion();
+
+/* ---------- ВКЛАДКА 2: БОЛЮСЫ ---------- */
+const bolusDrugs=[
+  {name:'Адреналин 1 мг/мл — анафилаксия', dog:0.01, cat:0.01, unit:'mg/kg', conc:1, form:'inj', note:'В/м. При остановке сердца или дыхания — в/в медленно в той же дозе. Инфузия 0.05 мкг/кг/мин — см. вкладку «ИПС».'},
+  {name:'Фуросемид 10 мг/мл — отек легких (старт)', dog:2, cat:3, unit:'mg/kg', conc:10, form:'inj', note:'Собаки 1–3 (старт 2), кошки 3–5 (старт 3). При некардиогенном больше не вводим. Кардиогенный: 4 мг/кг, затем 2–4 мг/кг каждые 1–2 ч до стабилизации, далее ИПС.'},
+  {name:'Фуросемид 10 мг/мл — гиперкальциемия', dog:2, cat:2, unit:'mg/kg', conc:10, form:'inj', note:'2–4 мг/кг каждые 8–12 ч, ТОЛЬКО после восполнения дегидратации и ОЦК.'},
+  {name:'Димедрол 10 мг/мл — кожная форма', dog:1, cat:0.5, unit:'mg/kg', conc:10, form:'inj', note:'Собаки 1–2, кошки 0.5–1 мг/кг (зуд, крапивница, отек морды, блефарит).'},
+  {name:'Димедрол 10 мг/мл — тяжелая форма', dog:3, cat:1.5, unit:'mg/kg', conc:10, form:'inj', note:'Собаки 3–4, кошки 1.5–2 мг/кг, ТОЛЬКО в/м (бронхоспазм, отек слизистых, ларингоспазм).'},
+  {name:'Дексаметазон 4 мг/мл', dog:0.1, cat:0.1, unit:'mg/kg', conc:4, form:'inj', note:'Анафилаксия — профилактика поздних проявлений. Гиперкальциемия: 0.1–0.22 мг/кг каждые 12–24 ч.'},
+  {name:'Преднизолон 30 мг/мл', dog:1, cat:1, unit:'mg/kg', conc:30, form:'inj', note:'Анафилаксия 1 мг/кг. Гиперкальциемия 1–2.2 мг/кг каждые 12 ч — ТОЛЬКО после цитологии/гистологии!'},
+  {name:'Буторфанол 10 мг/мл', dog:0.2, cat:0.2, unit:'mg/kg', conc:10, form:'inj', note:'0.2–0.4 мг/кг в/м или в/в. Препарат выбора при кардиогенном шоке.'},
+  {name:'Кальция глюконат 10%', dog:0.5, cat:0.5, unit:'ml/kg', conc:0, form:'inj', note:'В/в медленно, единожды (гипокальциемия), развести 1:10. Гиперкалиемия: 0.5–1 мл/кг более 20 мин под ЭКГ.'},
+  {name:'Глюкоза 40%', dog:1, cat:1, unit:'ml/kg', conc:0, form:'inj', note:'Гипогликемия. Контроль глюкозы каждые 15–20 мин.'},
+  {name:'Инсулин короткого действия 100 ЕД/мл — гиперкалиемия', dog:0.25, cat:0.25, unit:'ED/kg', conc:100, form:'inj', note:'+ декстроза 1–2 г на 1 ЕД, затем ИПС 2.5–5% декстрозы 4–6 ч. Канинсулин/Ветсулин 40 ЕД/мл: 0.25–0.5 ЕД/кг п/к 2 р/д.'},
+  {name:'NaCl 7.2–7.5% — рефрактерный шок', dog:3, cat:2, unit:'ml/kg', conc:0, form:'inj', note:'Собаки 3–5, кошки 2–3 мл/кг за 10–15 мин, сразу после — капельница изотоником.'},
+  {name:'NaCl 3% — гипонатриемия с неврологией', dog:2, cat:2, unit:'ml/kg', conc:0, form:'inj', note:'2–6 мл/кг за 10–15 мин; далее ИПС 0.5–2 мл/кг/ч 3% NaCl 48 ч; коррекция не быстрее 0.5 мЭкв/л/ч.'},
+  {name:'Магния сульфат 25% (2 мЭкв/мл)', dog:0.15, cat:0.15, unit:'mEq/kg', conc:2, form:'inj', note:'Желудочковая аритмия: 0.15–0.3 мЭкв/кг медленно за 5–15 мин (до 60 мин).'},
+  {name:'Натрия гидрокарбонат 8.4% (1 мЭкв/мл)', dog:0.5, cat:0.5, unit:'mEq/kg', conc:1, form:'inj', note:'Гиперкальциемический криз: 0.5–1 мЭкв/кг за 2–4 ч, разведение 1:4 с глюкозой 5%.'},
+  {name:'Лидокаин 2% — желудочковая тахикардия', dog:2, cat:0.25, unit:'mg/kg', conc:20, form:'inj', note:'В/в медленно. Кошки 0.2–0.5 мг/кг. Затем ИПС: собаки 50–75, кошки 10–20 мкг/кг/мин.'},
+  {name:'Амиодарон 50 мг/мл', dog:5, cat:5, unit:'mg/kg', conc:50, form:'inj', note:'5–10 мг/кг в/в за 30–60 мин.'},
+  {name:'Дексмедетомидин 500 мкг/мл', dog:0.5, cat:0.5, unit:'mcg/kg', conc:500, form:'inj', note:'0.5–1 мкг/кг в/в, исключительные случаи: обструктивная ГКМП, тампонада, агрессивные собаки.'},
+  {name:'Пимобендан 1.25 мг/таб', dog:0.25, cat:0.25, unit:'mg/kg', conc:1.25, form:'tab', note:'0.25–0.3 мг/кг п/о каждые 8–12 ч. СТРОГО противопоказан: обструктивная ГКМП, стеноз аорты, тампонада.'},
+  {name:'Дилтиазем 30 мг/таб', dog:0.5, cat:0.5, unit:'mg/kg', conc:30, form:'tab', note:'0.5–1.5 мг/кг п/о каждые 8 ч (наджелудочковая аритмия).'},
+  {name:'Соталол 80 мг/таб', dog:1, cat:1, unit:'mg/kg', conc:80, form:'tab', note:'1–2 мг/кг п/о каждые 12 ч.'},
+  {name:'Клопидогрел 75 мг/таб — кошки', dog:null, cat:18.75, unit:'mg (fixed)', conc:75, form:'tab', note:'18.75 мг на кошку (1/4 таблетки 75 мг), масса не нужна.'},
+  {name:'Габапентин 100 мг/таб — кошки', dog:null, cat:10, unit:'mg/kg', conc:100, form:'tab', note:'10 мг/кг при транспортировке (протокольно спорно).'},
+  {name:'Тразодон 50 мг/таб — собаки', dog:3, cat:null, unit:'mg/kg', conc:50, form:'tab', note:'3–7 мг/кг при транспортировке.'},
+  {name:'Толваптан 15 мг/таб', dog:3, cat:3, unit:'mg/kg', conc:15, form:'tab', note:'3 мг/кг п/о каждые 12 ч (нормо-/гиперволемическая гипонатриемия).'},
+  {name:'Физостигмин 1 мг/мл', dog:0.02, cat:0.02, unit:'mg/kg', conc:1, form:'inj', note:'Гипермагниемия: ТОЛЬКО в совокупности с кальция глюконатом 10%.'},
+  {name:'Золедронат 0.05 мг/мл', dog:0.1, cat:0.2, unit:'mg/kg', conc:0.05, form:'inj', note:'Собаки 0.1–0.25 мг/кг + 45–100 мл NaCl за 15–30 мин; кошки 0.2 мг/кг + 25 мл за 15 мин.'},
+  {name:'Памидронат 3 мг/мл', dog:1.3, cat:1, unit:'mg/kg', conc:3, form:'inj', note:'Собаки 1.3–2 мг/кг + 150 мл NaCl за 2–4 ч; кошки 1–1.5 мг/кг.'}
+];
+
+const bSpecies=document.getElementById('bSpecies');
+const bDrug=document.getElementById('bDrug');
+const bWeight=document.getElementById('bWeight');
+const bDose=document.getElementById('bDose');
+const bConc=document.getElementById('bConc');
+const bConcLabel=document.getElementById('bConcLabel');
+const bNote=document.getElementById('bNote');
+const res2=document.getElementById('res2');
+
+const unitLabel={'mg/kg':'мг','mcg/kg':'мкг','ED/kg':'ЕД','mEq/kg':'мЭкв','ml/kg':'мл','mg (fixed)':'мг'};
+
+bolusDrugs.forEach((d,i)=>{
+  const o=document.createElement('option');
+  o.value=i; o.textContent=d.name;
+  bDrug.appendChild(o);
+});
+
+function fmtVol(v){return v<1? v.toFixed(3): v.toFixed(2)}
+function fmtD(v){return v<10? v.toFixed(2): v.toFixed(1)}
+function fmtTab(v){return Math.round(v*100)/100}
+
+function bSet(){
+  const d=bolusDrugs[Number(bDrug.value)];
+  const dose=(bSpecies.value==='dog')? d.dog : d.cat;
+  bDose.value=(dose===null||dose===undefined)?'':dose;
+  bConc.value=d.conc||'';
+  bConcLabel.style.display=(d.unit==='ml/kg')?'none':'block';
+  bNote.value=d.note||'';
+  bCalc();
+}
+
+function bCalc(){
+  const d=bolusDrugs[Number(bDrug.value)];
+  const kg=Number(bWeight.value);
+  const dose=Number(bDose.value);
+  const conc=Number(bConc.value);
+
+  if(d.unit!=='mg (fixed)' && (!kg||kg<=0)){res2.textContent='Введите массу тела.';return}
+  if(!dose||dose<=0){res2.textContent='Введите дозу (диапазон — в примечании).';return}
+
+  if(d.unit==='ml/kg'){
+    res2.innerHTML='Объем на введение: <b>'+fmtVol(kg*dose)+' мл</b>';
+    return;
+  }
+  if(!(conc>0)){res2.textContent='Введите концентрацию.';return}
+
+  const total=(d.unit==='mg (fixed)')? dose : kg*dose;
+  const vol=total/conc;
+  const u=unitLabel[d.unit];
+  if(d.form==='tab'){
+    res2.innerHTML='Доза на приём: <b>'+fmtD(total)+' '+u+'</b><br>Таблетки: <b>'+fmtTab(vol)+' таб</b>';
+  }else{
+    res2.innerHTML='Доза на введение: <b>'+fmtD(total)+' '+u+'</b><br>Объем: <b>'+fmtVol(vol)+' мл</b>';
+  }
+}
+
+[bSpecies,bWeight,bDose,bConc].forEach(el=>{
+  el.addEventListener('input',bCalc);
+  el.addEventListener('change',bCalc);
+});
+bDrug.addEventListener('change',bSet);
+bSet();
 </script>
 </body>
 </html>
