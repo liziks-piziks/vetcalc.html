@@ -1,205 +1,351 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Калькулятор ОРИТ — Лямур</title>
-  <style>
-    body{margin:0;font-family:Arial,sans-serif;background:#f6f8fa;color:#1f2937}
-    main{max-width:820px;margin:24px auto;padding:20px;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
-    h1{margin-top:0;font-size:24px}
-    .warning{padding:10px;border-radius:8px;background:#fff7ed;border:1px solid #fed7aa;font-size:14px;line-height:1.4}
-    .tabs{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}
-    .tabs button{padding:10px 14px;border:1px solid #cbd5e1;border-radius:8px;background:#eef2ff;cursor:pointer;font-size:15px}
-    .tabs button.active{background:#2563eb;color:#fff;border-color:#2563eb}
-    .tab-page{display:none}
-    .tab-page.active{display:block}
-    label{display:block;margin:12px 0 6px;font-weight:bold}
-    input,select,textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:16px}
-    textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
-    .result{margin-top:16px;padding:14px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;font-size:16px;line-height:1.6}
-    .small{color:#64748b;font-size:13px;margin-top:8px}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Калькулятор ОРИТ — Лямур</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#f6f8fa;color:#1f2937}
+main{max-width:900px;margin:24px auto;padding:20px;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+h1{margin-top:0;font-size:24px}
+.warning{padding:10px;border-radius:8px;background:#fff7ed;border:1px solid #fed7aa;font-size:14px;line-height:1.4;margin-bottom:16px}
+.tabs{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}
+.tabs button{padding:10px 14px;border:1px solid #cbd5e1;border-radius:8px;background:#eef2ff;cursor:pointer;font-size:15px}
+.tabs button.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.tab-page{display:none}
+.tab-page.active{display:block}
+label{display:block;margin:12px 0 6px;font-weight:bold}
+input,select,textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:16px}
+textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
+.result{margin-top:16px;padding:14px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;font-size:16px;line-height:1.6}
+.small{color:#64748b;font-size:13px;margin-top:8px;line-height:1.5}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <main>
-  <h1>Калькулятор ОРИТ — Лямур</h1>
-  <div class="warning">Для внутреннего использования врачами клиники. Сверяйте дозы, концентрации, вид и противопоказания с инструкцией и методичкой ОРИТ.</div>
+<h1>Калькулятор ОРИТ — Лямур</h1>
+<div class="warning">Для внутреннего использования врачами клиники. Дозы из методички ОРИТ и базы skleroznik.ru. Всегда сверяйте вид, дозу, концентрацию и противопоказания с инструкцией к препарату.</div>
+<div class="tabs">
+<button id="tabBtn1" class="active" onclick="openTab(1)">Инфузии</button>
+<button id="tabBtn2" onclick="openTab(2)">Болюсы</button>
+<button id="tabBtn3" onclick="openTab(3)">ИПС</button>
+<button id="tabBtn4" onclick="openTab(4)">Электролиты</button>
+</div>
 
-  <div class="tabs">
-    <button id="tabBtn1" class="active" onclick="openTab(1)">Инфузионная терапия</button>
-    <button id="tabBtn2" onclick="openTab(2)">Болюсы</button>
-    <button id="tabBtn3" onclick="openTab(3)">ИПС</button>
-  </div>
+<div id="page1" class="tab-page active">
+<label>Вид животного<select id="species"><option value="dog">Собака</option><option value="cat">Кошка</option></select></label>
+<label>Масса тела, кг<input id="weight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 20"></label>
+<label>Обезвоживание, %<input id="dehyd" type="number" min="0" step="0.5" inputmode="decimal" placeholder="0, если нет"></label>
+<label>Текущие потери (рвота/диарея/моча), мл/сут<input id="losses" type="number" min="0" step="1" inputmode="decimal" placeholder="0, если нет"></label>
+<div class="result" id="res1">Введите данные — расчёт автоматический.</div>
+<div class="small">Аллометрическая формула — при массе &lt;2 кг и &gt;30 кг. Шоковый болюс: собаки 15–20 мл/кг за 10–15 мин, кошки 5–10 мл/кг за 15–20 мин; микроболюс сердечникам 1–3 мл/кг. Кошки до болюса: грелка + O2 до T ≥37.0 ℃, раствор греть до 40–42 ℃.</div>
+</div>
 
-  <div id="page1" class="tab-page active">
-    <label>Вид животного
-      <select id="species"><option value="dog">Собака</option><option value="cat">Кошка</option></select>
-    </label>
-    <label>Масса тела, кг <input id="weight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 20"></label>
-    <label>Обезвоживание, % <input id="dehyd" type="number" min="0" step="0.5" inputmode="decimal" placeholder="0, если нет"></label>
-    <label>Текущие потери (рвота/диарея/моча), мл/сут <input id="losses" type="number" min="0" step="1" inputmode="decimal" placeholder="0, если нет"></label>
-    <div class="result" id="res1">Введите данные — расчёт автоматический.</div>
-    <div class="small">Аллометрическая формула рекомендована при массе &lt;2 кг и &gt;30 кг. Шоковый болюс: собаки 15–20 мл/кг за 10–15 мин, кошки 5–10 мл/кг за 15–20 мин; микроболюс сердечникам 1–3 мл/кг.</div>
-  </div>
+<div id="page2" class="tab-page">
+<label>Вид животного<select id="bSpecies"><option value="dog">Собака</option><option value="cat">Кошка</option></select></label>
+<label>Препарат<select id="bDrug"></select></label>
+<label>Масса тела, кг<input id="bWeight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 4"></label>
+<label>Доза (мг/кг, мл/кг, ЕД/кг, мЭкв/кг, мкг/кг или фикс. на животное)<input id="bDose" type="number" min="0" step="0.01" inputmode="decimal"></label>
+<label id="bConcLabel">Концентрация (мг/мл, мг/таб, ЕД/мл, мЭкв/мл, мкг/мл)<input id="bConc" type="number" min="0" step="0.01" inputmode="decimal"></label>
+<label>Примечание<textarea id="bNote" readonly></textarea></label>
+<div class="result" id="res2">Выберите препарат и введите массу.</div>
+<div class="small">Позиции с пометкой «уточнить» отсутствуют в выгрузке skleroznik — сверьте с инструкцией. Фиксированные дозы (на животное) массу не требуют.</div>
+</div>
 
-  <div id="page2" class="tab-page">
-    <label>Вид животного
-      <select id="bSpecies"><option value="dog">Собака</option><option value="cat">Кошка</option></select>
-    </label>
-    <label>Препарат
-      <select id="bDrug"></select>
-    </label>
-    <label>Масса тела, кг <input id="bWeight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 4"></label>
-    <label>Доза (на кг или фиксированная) <input id="bDose" type="number" min="0" step="0.01" inputmode="decimal"></label>
-    <label id="bConcLabel">Концентрация (мг/мл, мг/таб, ЕД/мл, мЭкв/мл) <input id="bConc" type="number" min="0" step="0.01" inputmode="decimal"></label>
-    <label>Примечание <textarea id="bNote" readonly></textarea></label>
-    <div class="result" id="res2">Выберите препарат и введите массу.</div>
-    <div class="small">Дозы и концентрации подставляются из методички, но остаются редактируемыми: всегда сверяйте с инструкцией к вашему препарату.</div>
-  </div>
+<div id="page3" class="tab-page">
+<label>Препарат для ИПС<select id="ipsDrug"></select></label>
+<div class="grid">
+<label>Масса тела, кг<input id="ipsWeight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 3"></label>
+<label>Целевая доза (ед. см. в названии)<input id="ipsDose" type="number" min="0" step="0.01" inputmode="decimal"></label>
+<label>Концентрация ампулы<input id="ipsConc" type="number" min="0" step="0.01" inputmode="decimal"></label>
+<label>Объём шприца/флакона, мл<input id="ipsSyringe" type="number" min="1" step="1" inputmode="decimal" value="20"></label>
+</div>
+<label>Скорость инфузомата, мл/ч<input id="ipsRate" type="number" min="0.1" step="0.1" inputmode="decimal" value="2"></label>
+<label>Примечание<textarea id="ipsNote" readonly></textarea></label>
+<div class="result" id="res3">Введите данные для расчёта ИПС.</div>
+<div class="small">Формула: (доза × кг × 60)/1000 = мг/ч (для мкг/кг/мин). Инотропы/вазопрессоры — только отдельный катетер или 3-х кранник, НЕ смешивать с изотониками. Шпаргалка титрования норадреналина из методички верна для разводки 1.2 мг в 20 мл на 20 кг; для других весов считайте здесь.</div>
+</div>
 
-  <div id="page3" class="tab-page">
-    <div class="result">Раздел в разработке: расчёт ИПС (норадреналин, добутамин, лидокаин, KCl, фуросемид) появится в следующем обновлении.</div>
-  </div>
+<div id="page4" class="tab-page">
+<label>Ситуация<select id="eSit">
+<option value="hypoK">Гипокалиемия — KCl 4%</option>
+<option value="hyperK">Гиперкалиемия — протокол</option>
+<option value="hypoCa">Гипокальциемия — ИПС кальция</option>
+<option value="hyperCa">Гиперкальциемия — форсированный диурез</option>
+<option value="soda">Сода 8.4% — гиперкальциемический криз</option>
+<option value="hypoNa">Гипонатриемия — коррекция Na</option>
+<option value="hyperNa">Гипернатриемия — коррекция Na</option>
+<option value="hypoMg">Гипомагниемия — ИПС магния</option>
+<option value="hyperMg">Гипермагниемия — протокол</option>
+</select></label>
+<div class="grid">
+<label>Масса тела, кг<input id="eWeight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 5"></label>
+<label id="gSpecies">Вид<select id="eSpecies"><option value="dog">Собака</option><option value="cat">Кошка</option></select></label>
+<label id="gK">Калий крови, ммоль/л<input id="eK" type="number" step="0.1" inputmode="decimal" placeholder="Например, 3.2"></label>
+<label id="gNaCur">Натрий крови, ммоль/л<input id="eNaCur" type="number" step="1" inputmode="decimal" placeholder="Например, 115"></label>
+<label id="gNaT">Целевой натрий, ммоль/л<input id="eNaT" type="number" step="1" inputmode="decimal"></label>
+<label id="gHydr">Статус гидратации<select id="eHydr"><option value="0">Без обезвоживания</option><option value="56">Обезвоживание 5–6%</option><option value="810">8–10% / кардио / ОПП</option></select></label>
+<label id="gCaD">Доза Ca глюконата 10%, мл/кг/ч<select id="eCaD"><option value="0.5">0.5</option><option value="0.75">0.75</option><option value="1">1.0</option><option value="0.25">0.25 (после болюса)</option><option value="0.375">0.375 (после болюса)</option></select></label>
+<label id="gKSel">Калий для рецепта<select id="eKSel"><option value="norm">K нормальный</option><option value="3035">K 3.0–3.5 ммоль/л</option><option value="lt30">K &lt;3.0 ммоль/л</option></select></label>
+<label id="gFlask">Объём флакона, мл<input id="eFlask" type="number" min="1" step="1" inputmode="decimal" value="500"></label>
+<label id="gRate">Скорость инфузомата, мл/ч<input id="eRate" type="number" min="0.1" step="0.1" inputmode="decimal" value="10"></label>
+<label id="gHours">Время инфузии, ч<input id="eHours" type="number" min="0.5" step="0.5" inputmode="decimal" value="3"></label>
+<label id="gMgD">Доза Mg, мЭкв/кг/ч<input id="eMgD" type="number" min="0" step="0.005" inputmode="decimal" value="0.03"></label>
+<label id="gSol">Раствор<select id="eSol"><option value="513">3% NaCl (513 ммоль/л)</option><option value="154">0.9% NaCl (154 ммоль/л)</option><option value="130">Рингер лактат (130 ммоль/л)</option><option value="77">0.45% NaCl (77 ммоль/л)</option><option value="0">5% глюкоза (0 ммоль/л)</option></select></label>
+</div>
+<div class="result" id="res4">Выберите ситуацию и введите данные.</div>
+<div class="small" id="eNote"></div>
+</div>
 </main>
 
 <script>
-function openTab(n){
-  for(let i=1;i<=3;i++){
-    document.getElementById('page'+i).classList.toggle('active', i===n);
-    document.getElementById('tabBtn'+i).classList.toggle('active', i===n);
-  }
-}
-
-/* ---------- ВКЛАДКА 1: ИНФУЗИОННАЯ ТЕРАПИЯ ---------- */
-const speciesEl=document.getElementById('species');
-const weightEl=document.getElementById('weight');
-const dehydEl=document.getElementById('dehyd');
-const lossesEl=document.getElementById('losses');
-const res1=document.getElementById('res1');
-
+function openTab(n){for(let i=1;i<=4;i++){document.getElementById('page'+i).classList.toggle('active',i===n);document.getElementById('tabBtn'+i).classList.toggle('active',i===n);}}
 function r1(x){return Math.round(x*10)/10}
+function r2(x){return Math.round(x*100)/100}
+function fmtVol(v){return v<1?v.toFixed(3):v.toFixed(2)}
+function fmtD(v){return v<10?v.toFixed(2):v.toFixed(1)}
 
+/* ===== ВКЛАДКА 1 ===== */
+const speciesEl=document.getElementById('species'),weightEl=document.getElementById('weight'),dehydEl=document.getElementById('dehyd'),lossesEl=document.getElementById('losses'),res1=document.getElementById('res1');
 function calcInfusion(){
-  const kg=Number(weightEl.value);
-  if(!kg||kg<=0){res1.textContent='Введите массу тела.';return}
-  const dehyd=Number(dehydEl.value)||0;
-  const losses=Number(lossesEl.value)||0;
-  const maintenance=kg*30+70;
-  const deficit=kg*dehyd*10;
-  const daily=maintenance+deficit+losses;
-  const rate=daily/24;
-  const allo=(speciesEl.value==='dog'?132:80)*Math.pow(kg,0.75)/24;
-  const bolus=speciesEl.value==='dog'?[15*kg,20*kg,'10–15 мин']:[5*kg,10*kg,'15–20 мин'];
-  res1.innerHTML=
-    'Поддержка: <b>'+r1(maintenance)+' мл/сут</b><br>'+
-    'Дефицит ('+dehyd+'%): <b>'+r1(deficit)+' мл</b><br>'+
-    'Потери: <b>'+r1(losses)+' мл/сут</b><br>'+
-    'Итого: <b>'+r1(daily)+' мл/сут</b> → скорость <b>'+r1(rate)+' мл/ч</b><br>'+
-    'Аллометрическая скорость: <b>'+r1(allo)+' мл/ч</b><br>'+
-    'Шоковый болюс: <b>'+r1(bolus[0])+'–'+r1(bolus[1])+' мл</b> за '+bolus[2]+'<br>'+
-    'Микроболюс (сердечники): <b>'+r1(kg)+'–'+r1(3*kg)+' мл</b>';
+const kg=Number(weightEl.value);
+if(!kg||kg<=0){res1.textContent='Введите массу тела.';return}
+const dehyd=Number(dehydEl.value)||0,losses=Number(lossesEl.value)||0;
+const maintenance=kg*30+70,deficit=kg*dehyd*10,daily=maintenance+deficit+losses,rate=daily/24;
+const allo=(speciesEl.value==='dog'?132:80)*Math.pow(kg,0.75)/24;
+const bolus=speciesEl.value==='dog'?[15*kg,20*kg,'10–15 мин']:[5*kg,10*kg,'15–20 мин'];
+res1.innerHTML='Поддержка: <b>'+r1(maintenance)+' мл/сут</b><br>Дефицит ('+dehyd+'%): <b>'+r1(deficit)+' мл</b><br>Потери: <b>'+r1(losses)+' мл/сут</b><br>Итого: <b>'+r1(daily)+' мл/сут</b> → скорость <b>'+r1(rate)+' мл/ч</b><br>Аллометрическая скорость: <b>'+r1(allo)+' мл/ч</b><br>Шоковый болюс: <b>'+r1(bolus[0])+'–'+r1(bolus[1])+' мл</b> за '+bolus[2]+'<br>Микроболюс (сердечники): <b>'+r1(kg)+'–'+r1(3*kg)+' мл</b>';
 }
-[speciesEl,weightEl,dehydEl,lossesEl].forEach(el=>{
-  el.addEventListener('input',calcInfusion);
-  el.addEventListener('change',calcInfusion);
-});
+[speciesEl,weightEl,dehydEl,lossesEl].forEach(el=>{el.addEventListener('input',calcInfusion);el.addEventListener('change',calcInfusion)});
 calcInfusion();
 
-/* ---------- ВКЛАДКА 2: БОЛЮСЫ ---------- */
+/* ===== ВКЛАДКА 2: БОЛЮСЫ ===== */
 const bolusDrugs=[
-  {name:'Адреналин 1 мг/мл — анафилаксия', dog:0.01, cat:0.01, unit:'mg/kg', conc:1, form:'inj', note:'В/м. При остановке сердца или дыхания — в/в медленно в той же дозе. Инфузия 0.05 мкг/кг/мин — см. вкладку «ИПС».'},
-  {name:'Фуросемид 10 мг/мл — отек легких (старт)', dog:2, cat:3, unit:'mg/kg', conc:10, form:'inj', note:'Собаки 1–3 (старт 2), кошки 3–5 (старт 3). При некардиогенном больше не вводим. Кардиогенный: 4 мг/кг, затем 2–4 мг/кг каждые 1–2 ч до стабилизации, далее ИПС.'},
-  {name:'Фуросемид 10 мг/мл — гиперкальциемия', dog:2, cat:2, unit:'mg/kg', conc:10, form:'inj', note:'2–4 мг/кг каждые 8–12 ч, ТОЛЬКО после восполнения дегидратации и ОЦК.'},
-  {name:'Димедрол 10 мг/мл — кожная форма', dog:1, cat:0.5, unit:'mg/kg', conc:10, form:'inj', note:'Собаки 1–2, кошки 0.5–1 мг/кг (зуд, крапивница, отек морды, блефарит).'},
-  {name:'Димедрол 10 мг/мл — тяжелая форма', dog:3, cat:1.5, unit:'mg/kg', conc:10, form:'inj', note:'Собаки 3–4, кошки 1.5–2 мг/кг, ТОЛЬКО в/м (бронхоспазм, отек слизистых, ларингоспазм).'},
-  {name:'Дексаметазон 4 мг/мл', dog:0.1, cat:0.1, unit:'mg/kg', conc:4, form:'inj', note:'Анафилаксия — профилактика поздних проявлений. Гиперкальциемия: 0.1–0.22 мг/кг каждые 12–24 ч.'},
-  {name:'Преднизолон 30 мг/мл', dog:1, cat:1, unit:'mg/kg', conc:30, form:'inj', note:'Анафилаксия 1 мг/кг. Гиперкальциемия 1–2.2 мг/кг каждые 12 ч — ТОЛЬКО после цитологии/гистологии!'},
-  {name:'Буторфанол 10 мг/мл', dog:0.2, cat:0.2, unit:'mg/kg', conc:10, form:'inj', note:'0.2–0.4 мг/кг в/м или в/в. Препарат выбора при кардиогенном шоке.'},
-  {name:'Кальция глюконат 10%', dog:0.5, cat:0.5, unit:'ml/kg', conc:0, form:'inj', note:'В/в медленно, единожды (гипокальциемия), развести 1:10. Гиперкалиемия: 0.5–1 мл/кг более 20 мин под ЭКГ.'},
-  {name:'Глюкоза 40%', dog:1, cat:1, unit:'ml/kg', conc:0, form:'inj', note:'Гипогликемия. Контроль глюкозы каждые 15–20 мин.'},
-  {name:'Инсулин короткого действия 100 ЕД/мл — гиперкалиемия', dog:0.25, cat:0.25, unit:'ED/kg', conc:100, form:'inj', note:'+ декстроза 1–2 г на 1 ЕД, затем ИПС 2.5–5% декстрозы 4–6 ч. Канинсулин/Ветсулин 40 ЕД/мл: 0.25–0.5 ЕД/кг п/к 2 р/д.'},
-  {name:'NaCl 7.2–7.5% — рефрактерный шок', dog:3, cat:2, unit:'ml/kg', conc:0, form:'inj', note:'Собаки 3–5, кошки 2–3 мл/кг за 10–15 мин, сразу после — капельница изотоником.'},
-  {name:'NaCl 3% — гипонатриемия с неврологией', dog:2, cat:2, unit:'ml/kg', conc:0, form:'inj', note:'2–6 мл/кг за 10–15 мин; далее ИПС 0.5–2 мл/кг/ч 3% NaCl 48 ч; коррекция не быстрее 0.5 мЭкв/л/ч.'},
-  {name:'Магния сульфат 25% (2 мЭкв/мл)', dog:0.15, cat:0.15, unit:'mEq/kg', conc:2, form:'inj', note:'Желудочковая аритмия: 0.15–0.3 мЭкв/кг медленно за 5–15 мин (до 60 мин).'},
-  {name:'Натрия гидрокарбонат 8.4% (1 мЭкв/мл)', dog:0.5, cat:0.5, unit:'mEq/kg', conc:1, form:'inj', note:'Гиперкальциемический криз: 0.5–1 мЭкв/кг за 2–4 ч, разведение 1:4 с глюкозой 5%.'},
-  {name:'Лидокаин 2% — желудочковая тахикардия', dog:2, cat:0.25, unit:'mg/kg', conc:20, form:'inj', note:'В/в медленно. Кошки 0.2–0.5 мг/кг. Затем ИПС: собаки 50–75, кошки 10–20 мкг/кг/мин.'},
-  {name:'Амиодарон 50 мг/мл', dog:5, cat:5, unit:'mg/kg', conc:50, form:'inj', note:'5–10 мг/кг в/в за 30–60 мин.'},
-  {name:'Дексмедетомидин 500 мкг/мл', dog:0.5, cat:0.5, unit:'mcg/kg', conc:500, form:'inj', note:'0.5–1 мкг/кг в/в, исключительные случаи: обструктивная ГКМП, тампонада, агрессивные собаки.'},
-  {name:'Пимобендан 1.25 мг/таб', dog:0.25, cat:0.25, unit:'mg/kg', conc:1.25, form:'tab', note:'0.25–0.3 мг/кг п/о каждые 8–12 ч. СТРОГО противопоказан: обструктивная ГКМП, стеноз аорты, тампонада.'},
-  {name:'Дилтиазем 30 мг/таб', dog:0.5, cat:0.5, unit:'mg/kg', conc:30, form:'tab', note:'0.5–1.5 мг/кг п/о каждые 8 ч (наджелудочковая аритмия).'},
-  {name:'Соталол 80 мг/таб', dog:1, cat:1, unit:'mg/kg', conc:80, form:'tab', note:'1–2 мг/кг п/о каждые 12 ч.'},
-  {name:'Клопидогрел 75 мг/таб — кошки', dog:null, cat:18.75, unit:'mg (fixed)', conc:75, form:'tab', note:'18.75 мг на кошку (1/4 таблетки 75 мг), масса не нужна.'},
-  {name:'Габапентин 100 мг/таб — кошки', dog:null, cat:10, unit:'mg/kg', conc:100, form:'tab', note:'10 мг/кг при транспортировке (протокольно спорно).'},
-  {name:'Тразодон 50 мг/таб — собаки', dog:3, cat:null, unit:'mg/kg', conc:50, form:'tab', note:'3–7 мг/кг при транспортировке.'},
-  {name:'Толваптан 15 мг/таб', dog:3, cat:3, unit:'mg/kg', conc:15, form:'tab', note:'3 мг/кг п/о каждые 12 ч (нормо-/гиперволемическая гипонатриемия).'},
-  {name:'Физостигмин 1 мг/мл', dog:0.02, cat:0.02, unit:'mg/kg', conc:1, form:'inj', note:'Гипермагниемия: ТОЛЬКО в совокупности с кальция глюконатом 10%.'},
-  {name:'Золедронат 0.05 мг/мл', dog:0.1, cat:0.2, unit:'mg/kg', conc:0.05, form:'inj', note:'Собаки 0.1–0.25 мг/кг + 45–100 мл NaCl за 15–30 мин; кошки 0.2 мг/кг + 25 мл за 15 мин.'},
-  {name:'Памидронат 3 мг/мл', dog:1.3, cat:1, unit:'mg/kg', conc:3, form:'inj', note:'Собаки 1.3–2 мг/кг + 150 мл NaCl за 2–4 ч; кошки 1–1.5 мг/кг.'}
+{name:'Адреналин 1 мг/мл — анафилаксия, реанимация',dog:0.01,cat:0.01,unit:'mg/kg',conc:1,form:'inj',note:'В/м 0.01 мг/кг. Остановка сердца/дыхания — в/в медленно та же доза. Реанимация: до 100 мкг/кг (0.1 мг/кг) в/в, повтор через 2–5 мин. Разведение 1:10000. ИПС 0.05 мкг/кг/мин — вкладка ИПС.'},
+{name:'Фуросемид 10 мг/мл — некардиогенный отек легких',dog:2,cat:3,unit:'mg/kg',conc:10,form:'inj',note:'Собаки 1–3 мг/кг (старт 2), кошки 3–5 мг/кг (старт 3) в/в. Более НЕ вводим. Контроль ЧДД q15–30 мин 2–4 ч, взвешивание q6–12 ч, TFAST.'},
+{name:'Фуросемид 10 мг/мл — кардиогенный отек легких',dog:4,cat:4,unit:'mg/kg',conc:10,form:'inj',note:'4 мг/кг в/в, затем 2–4 мг/кг каждые 1–2 ч до стабилизации дыхания. Далее болюс 0.5–1 мг/кг + ИПС 0.2–1 мг/кг/ч.'},
+{name:'Фуросемид 10 мг/мл — гиперкальциемия',dog:2,cat:2,unit:'mg/kg',conc:10,form:'inj',note:'2–4 мг/кг в/в каждые 8–12 ч. ТОЛЬКО после восполнения дегидратации и ОЦК.'},
+{name:'Фуросемид 40 мг/таб — перорально',dog:2,cat:2,unit:'mg/kg',conc:40,form:'tab',note:'2–4 мг/кг п/о 1 раз/48 ч или 3 р/сут при угрозе отека легких; сердечным — старт 2 мг/кг 2 р/сут.'},
+{name:'Димедрол 10 мг/мл — кожная форма анафилаксии',dog:1,cat:0.5,unit:'mg/kg',conc:10,form:'inj',note:'Собаки 1–2 мг/кг, кошки 0.5–1 мг/кг. Зуд, крапивница, отек морды, блефарит.'},
+{name:'Димедрол 10 мг/мл — тяжелая анафилаксия',dog:3,cat:1.5,unit:'mg/kg',conc:10,form:'inj',note:'Собаки 3–4 мг/кг, кошки 1.5–2 мг/кг ТОЛЬКО в/м. Бронхоспазм, отек слизистых, ларингоспазм.'},
+{name:'Дексаметазон 4 мг/мл',dog:0.1,cat:0.1,unit:'mg/kg',conc:4,form:'inj',note:'Методичка (анафилаксия, профилактика поздних проявлений): 0.1 мг/кг в/в или в/м. Skleroznik: противовоспалительная 0.01–0.16 мг/кг q24h; шок 0.5 мг/кг в/в; иммуносупрессия 0.3–0.64 мг/кг q24h. Гиперкальциемия: 0.1–0.22 мг/кг q12–24h.'},
+{name:'Преднизолон 30 мг/мл',dog:1,cat:1,unit:'mg/kg',conc:30,form:'inj',note:'Анафилаксия 1 мг/кг в/м или в/в. Гиперкальциемия 1–2.2 мг/кг q12h — ТОЛЬКО после цитологии/гистологии!'},
+{name:'Буторфанол 10 мг/мл (0.2%)',dog:0.2,cat:0.2,unit:'mg/kg',conc:10,form:'inj',note:'0.2–0.4 мг/кг в/м или в/в. Препарат выбора при кардиогенном шоке. Хорьки 0.25 мг/кг п/к.'},
+{name:'Кальция глюконат 10%',dog:0.5,cat:0.5,unit:'ml/kg',conc:0,form:'inj',note:'Гипокальциемия: 0.5–1 мл/кг в/в медленно, единожды, развести 1:10. Гиперкалиемия: 0.5–1 мл/кг (=50–100 мг/кг) >20 мин под ЭКГ. Гипермагниемия: за 15–30 мин + физостигмин.'},
+{name:'Глюкоза 40%',dog:1,cat:1,unit:'ml/kg',conc:0,form:'inj',note:'Гипогликемия: 1 мл/кг в/в. Контроль глюкозы каждые 15–20 мин. Нормы: собаки 4.0–8.0, кошки 4.0–14.0 ммоль/л.'},
+{name:'Инсулин короткий/ультракороткий 100 ЕД/мл — гиперкалиемия',dog:0.25,cat:0.25,unit:'ED/kg',conc:100,form:'inj',note:'0.25–0.5 ЕД/кг в/в + декстроза 1–2 г на 1 ЕД (развести до 5–20%), затем ИПС 2.5–5% декстрозы 4–6 ч.'},
+{name:'Инсулин (Винсувет кошки / Канинсулин собаки) 40 ЕД/мл',dog:0.25,cat:0.25,unit:'ED/kg',conc:40,form:'inj',note:'Начальная 0.25–0.5 ЕД/кг п/к 2 р/д; кошкам при любом весе макс. старт 2 ЕД. Перед каждым введением — экспресс-глюкоза.'},
+{name:'NaCl 7.2–7.5% — рефрактерный шок',dog:3,cat:2,unit:'ml/kg',conc:0,form:'inj',note:'Собаки 3–5 мл/кг, кошки 2–3 мл/кг за 10–15 мин, сразу после — изотоник 2–4 (кошки) / 3–5 (собаки) мл/кг/ч.'},
+{name:'NaCl 3% — гипонатриемия с неврологией',dog:2,cat:2,unit:'ml/kg',conc:0,form:'inj',note:'2–6 мл/кг за 10–15 мин (судороги, ступор, Na<120). Далее ИПС 0.5–2 мл/кг/ч 3% NaCl 48 ч; коррекция ≤0.5 мЭкв/л/ч, ≤10–12 мЭкв/л/сут.'},
+{name:'Магния сульфат 25% (2 мЭкв/мл)',dog:0.15,cat:0.15,unit:'mEq/kg',conc:2,form:'inj',note:'Желудочковая аритмия: 0.15–0.3 мЭкв/кг (суточная потребность) в 0.9% NaCl или 5% декстрозе за 5–15 мин (до 60 мин).'},
+{name:'Натрия гидрокарбонат 8.4% (1 мЭкв/мл)',dog:0.5,cat:0.5,unit:'mEq/kg',conc:1,form:'inj',note:'Гиперкальциемический криз: 0.5–1 мЭкв/кг за 2–4 ч. Разведение 1:4 с глюкозой 5% (см. вкладку Электролиты).'},
+{name:'Лидокаин 2% (20 мг/мл) — желудочковая тахикардия',dog:2,cat:0.25,unit:'mg/kg',conc:20,form:'inj',note:'Собаки 2 мг/кг в/в медленно, затем ИПС 50–75 мкг/кг/мин. Кошки 0.2–0.5 мг/кг медленно, затем ИПС 10–20 мкг/кг/мин.'},
+{name:'Амиодарон 50 мг/мл',dog:5,cat:5,unit:'mg/kg',conc:50,form:'inj',note:'5–10 мг/кг в/в за 30–60 мин (желудочковая тахикардия).'},
+{name:'Амиодарон 200 мг/таб',dog:10,cat:null,unit:'mg/kg',conc:200,form:'tab',note:'Собаки: 10–15 мг/кг п/о 2 р/сут 7 дн, затем 5–7.5 мг/кг 2 р/сут 14 дн, затем 5–7.5 мг/кг 1 р/сут.'},
+{name:'Дексмедетомидин 500 мкг/мл',dog:0.5,cat:0.5,unit:'mcg/kg',conc:500,form:'inj',note:'0.5–1 мкг/кг в/в. Исключительные случаи: обструктивная ГКМП у кошек, тампонада, агрессивные собаки.'},
+{name:'Пимобендан 1.25 мг/таб',dog:0.25,cat:0.25,unit:'mg/kg',conc:1.25,form:'tab',note:'0.25–0.3 мг/кг п/о каждые 8–12 ч. СТРОГО противопоказан: обструктивная ГКМП, стеноз аорты, тампонада.'},
+{name:'Дилтиазем 30 мг/таб — наджелудочковая аритмия',dog:0.5,cat:0.5,unit:'mg/kg',conc:30,form:'tab',note:'0.5–1.5 мг/кг п/о каждые 8 ч (ЧСС>180–220).'},
+{name:'Соталол 80 мг/таб',dog:1,cat:1,unit:'mg/kg',conc:80,form:'tab',note:'1–2 мг/кг п/о каждые 12 ч (желудочковая тахикардия).'},
+{name:'Клопидогрел 75 мг/таб — кошки',dog:null,cat:18.75,unit:'mg (fixed)',conc:75,form:'tab',note:'18.75 мг на кошку (1/4 таблетки 75 мг). Масса не нужна.'},
+{name:'Габапентин 100 мг/таб',dog:10,cat:10,unit:'mg/kg',conc:100,form:'tab',note:'Кошки 5–10 мг/кг q8–12h (транспорт, нейропатическая боль). Собаки 10–60 мг/кг/сут в 2–3 приёма.'},
+{name:'Тразодон 50 мг/таб — собаки',dog:3,cat:null,unit:'mg/kg',conc:50,form:'tab',note:'3–7 мг/кг п/о при транспортировке. Протокольно спорно.'},
+{name:'Толваптан 15 мг/таб',dog:3,cat:3,unit:'mg/kg',conc:15,form:'tab',note:'3 мг/кг п/о каждые 12 ч (нормо- и гиперволемическая гипонатриемия).'},
+{name:'Физостигмин 1 мг/мл — гипермагниемия',dog:0.02,cat:0.02,unit:'mg/kg',conc:1,form:'inj',note:'0.02 мг/кг в/в. ТОЛЬКО в совокупности с кальция глюконатом 10%.'},
+{name:'Золедронат 0.05 мг/мл — гиперкальциемия',dog:0.1,cat:0.2,unit:'mg/kg',conc:0.05,form:'inj',note:'Собаки 0.1–0.25 мг/кг + 45–100 мл 0.9% NaCl за 15–30 мин. Кошки 0.2 мг/кг + 25 мл за 15 мин. Ca×P отношение >46.5 — риск резорбции.'},
+{name:'Памидронат 3 мг/мл — гиперкальциемия',dog:1.3,cat:1,unit:'mg/kg',conc:3,form:'inj',note:'Собаки 1.3–2 мг/кг + 150 мл 0.9% NaCl за 2–4 ч. Кошки 1–1.5 мг/кг.'},
+{name:'Атропин 1 мг/мл',dog:0.02,cat:0.02,unit:'mg/kg',conc:1,form:'inj',note:'Брадиаритмии 0.01–0.03 мг/кг в/в. Органофосфаты: 0.2–0.5 мг/кг (1/4 в/в, 3/4 в/м, п/к) до эффекта.'},
+{name:'Атипамезол 5 мг/мл — антагонист альфа-2',dog:null,cat:null,unit:'mcg/kg',conc:5000,form:'inj',note:'Собаки: доза мкг = дозе введенного медетомидина/дексмедетомидина (если >1 ч — половина). Кошки: в 2 раза меньше. Введите дозу вручную.'},
+{name:'Транексамовая кислота 50 мг/мл',dog:10,cat:10,unit:'mg/kg',conc:50,form:'inj',note:'10–15 мг/кг в/в, п/к, в/м. Быстрое в/в — рвота.'},
+{name:'Этамзилат 125 мг/мл',dog:10,cat:10,unit:'mg/kg',conc:125,form:'inj',note:'10–15 мг/кг. Дозы эмпирические.'},
+{name:'Супрастин 20 мг/мл',dog:0.1,cat:0.1,unit:'ml/kg',conc:0,form:'inj',note:'Собаки: <10 кг — 0.1 мл/кг; 10–20 кг — 1 мл; >20 кг — 2 мл. Кошки 0.1 мл/кг. Другие источники: 0.2–0.3 мг/кг 2 р/д.'},
+{name:'Цетиризин 10 мг/таб',dog:1,cat:null,unit:'mg/kg',conc:10,form:'tab',note:'Собаки 1 мг/кг п/о 1 р/сут. Кошки: 5 мг на кошку 1 р/сут (введите фикс. дозу вручную). Слабо эффективен.'},
+/* --- skleroznik: А --- */
+{name:'Адеметионин (Гептрал) 500 мг/фл',dog:20,cat:20,unit:'mg/kg',conc:500,form:'inj',note:'20 мг/кг п/о или в/в q24h. Гепатопротектор. Разведённый раствор хранить ≤24 ч. Таблетки 400/500 мг.'},
+{name:'Ализин (агепристон) 30 мг/мл',dog:10,cat:15,unit:'mg/kg',conc:30,form:'inj',note:'Прерывание беременности п/к q24h ×2 (собаки 0–45 дн щенности, кошки 7–8 дн после спаривания). Пиометра: дни 1, 2, 7 (+14, 21 при плохом ответе). Кошки фиброаденоматоз: 20 мг/кг 1 р/7 дн.'},
+{name:'Азитромицин 250 мг/таб',dog:5,cat:5,unit:'mg/kg',conc:250,form:'tab',note:'5–10 мг/кг п/о q24h; после 3–5 дн можно q48h. Суспензия 20 или 40 мг/мл.'},
+{name:'Активированный уголь 250 мг/таб',dog:500,cat:500,unit:'mg/kg',conc:250,form:'tab',note:'0.5–4 г/кг п/о в суспензии через зонд. Адсорбент при интоксикациях.'},
+{name:'Аллопуринол 100 мг/таб',dog:10,cat:null,unit:'mg/kg',conc:100,form:'tab',note:'Уратный уролитиаз: 10 мг/кг п/о q8h 30 дн, затем 10–15 мг/кг q12h ≥6 мес. Лейшманиоз: 10 мг/кг 2 р/сут 6–12 мес. На фоне диеты с низким пурином (риск ксантиновых камней).'},
+{name:'Альмагель (суспензия)',dog:0.5,cat:0.5,unit:'ml/kg',conc:0,form:'inj',note:'10–30 мг/кг или 0.5–1 мл/кг п/о с едой q6–8h (антацид, связывание фосфора при ХБП). До 100 мг/кг.'},
+{name:'Амикацин 250 мг/мл',dog:15,cat:10,unit:'mg/kg',conc:250,form:'inj',note:'Собаки 15–30 мг/кг, кошки 10–15 мг/кг в/в, в/м, п/к q24h. Нефро- и ототоксичен.'},
+{name:'Аминофиллин (эуфиллин) 24 мг/мл',dog:5,cat:3,unit:'mg/kg',conc:24,form:'inj',note:'Собаки 5–10 мг/кг в/в q6–8h. Кошки 3–5 мг/кг в/в 1–2 р/сут или п/о 5–7 мг/кг в 2–3 приёма. Бронхолитик.'},
+{name:'Амброксол 30 мг/таб',dog:0.5,cat:0.5,unit:'mg/kg',conc:30,form:'tab',note:'0.5 мг/кг п/о 2 р/сут после еды. Муколитик.'},
+{name:'Амитриптилин 25 мг/таб',dog:1,cat:0.5,unit:'mg/kg',conc:25,form:'tab',note:'Собаки 1–2 мг/кг п/о 1–2 р/сут. Кошки 0.5–1 мг/кг 1 р/сут. Идиопатический цистит, компульсии.'},
+{name:'Амлодипин 5 мг/таб — собаки',dog:0.05,cat:null,unit:'mg/kg',conc:5,form:'tab',note:'0.05–0.1 мг/кг п/о 1–2 р/сут, макс 0.4 мг/кг. Контроль АД обязателен.'},
+{name:'Амлодипин 5 мг/таб — кошки',dog:null,cat:0.625,unit:'mg (fixed)',conc:5,form:'tab',note:'0.625–1.25 мг на кошку п/о 1 р/сут. Контроль АД обязателен.'},
+{name:'Амоксициллин 150 мг/мл (пролонг.)',dog:7,cat:7,unit:'mg/kg',conc:150,form:'inj',note:'7 мг/кг в/м 1 р/сут или 15 мг/кг каждые 48 ч. П/о 10 мг/кг 2–3 р/сут.'},
+{name:'Амоксициллин+клавуланат 250 мг/таб (вет.)',dog:12.5,cat:12.5,unit:'mg/kg',conc:250,form:'tab',note:'Инъекции 8.75 мг/кг п/к, в/м q24h или в/в q8h (140 мг/мл). П/о 12.5–25 мг/кг q8–12h. Дерматология 20–30 мг/кг q12h до 3 мес.'},
+{name:'Ампициллин 1000 мг/фл',dog:20,cat:20,unit:'mg/kg',conc:100,form:'inj',note:'10–20 мг/кг в/в, в/м, п/к, п/о q6–8h; тяжёлые/ЦНС до 40 мг/кг в/в q6h.'},
+{name:'Аргинин — кошки',dog:null,cat:1000,unit:'mg (fixed)',conc:1000,form:'tab',note:'1000 мг на кошку п/о 1 р/сут (печёночный липидоз).'},
+{name:'Аскорбиновая кислота 100 мг/мл',dog:30,cat:30,unit:'mg/kg',conc:100,form:'inj',note:'Метгемоглобинемия: 30–40 мг/кг п/к q6h, 7 введений.'},
+{name:'Альбумин 20%',dog:2,cat:2,unit:'ml/kg',conc:0,form:'inj',note:'2–5 мл/кг суточная доза в/в. Плазмозамещающий.'},
+{name:'Афоксоланер (Нексгард) 68 мг/таб',dog:2.5,cat:null,unit:'mg/kg',conc:68,form:'tab',note:'От 2.5 мг/кг п/о 1 р/мес. Таблетки по весовым категориям.'},
+{name:'Афоксоланер+мильбемицин (Нексгард Спектра)',dog:2.5,cat:null,unit:'mg/kg',conc:37.5,form:'tab',note:'2.5 мг/кг по афоксоланеру + 0.5 мг/кг по мильбемицину 1 р/мес.'},
+{name:'Ацетилцистеин 100 мг/мл — отравление парацетамолом',dog:140,cat:140,unit:'mg/kg',conc:100,form:'inj',note:'140–280 мг/кг в 12–25 мл/кг 5% глюкозы в/в за 6 ч, затем ИПС 70 мг/кг q6h (≥7 доз). Или 150 старт, затем 50 мг/кг q4h ×17. Муколитик: 50 мг 2% р-ра небулайзер.'},
+/* --- Б, В --- */
+{name:'Бромгексин 8 мг/мл суспензия',dog:2,cat:1,unit:'mg/kg',conc:8,form:'inj',note:'Собаки 2 мг/кг п/о q12h; кошки 1 мг/кг q24h.'},
+{name:'Ванкомицин 500 мг/фл',dog:15,cat:12.5,unit:'mg/kg',conc:50,form:'inj',note:'Собаки 15 мг/кг в/в q6–8h; кошки 12–15 мг/кг q8h. АНТИБИОТИК РЕЗЕРВА.'},
+{name:'Винбластин 10 мг/фл',dog:2,cat:2,unit:'mg/kg',conc:10,form:'inj',note:'2–2.5 мг/кг в/в каждые 7–14 дн. Цитостатик.'},
+{name:'Винкристин 1 мг/фл',dog:0.5,cat:0.5,unit:'mg/kg',conc:1,form:'inj',note:'ТВС: 0.025 мг/кг в/в q7d курс 4 нед. Другие неоплазии: 0.5–0.75 мг/кг.'},
+{name:'Витамин B1 (тиамин) 50 мг/мл',dog:100,cat:15,unit:'mg (fixed)',conc:50,form:'inj',note:'Дефицит: собаки 50–250 мг/собаку, кошки 10–25 мг/кошку q12–24h. Свинец: 2 мг/кг q12h. Этиленгликоль: 100 мг/животное q24h.'},
+{name:'Витамин B6 (пиридоксин) 50 мг/мл — изониазид',dog:71,cat:null,unit:'mg/kg',conc:50,form:'inj',note:'71 мг/кг в/в за 30–60 мин (если доза изониазида неизвестна); иначе 1 мг пиридоксина на 1 мг изониазида.'},
+{name:'Витамин B12 500 мкг/мл',dog:500,cat:125,unit:'mcg (fixed)',conc:500,form:'inj',note:'Собаки 0.25–1 мг (250–1000 мкг)/собаку п/к, в/м q7d 4 нед. Кошки 0.125–0.25 мг (125–250 мкг)/кошку q7d 4–6 нед.'},
+{name:'Витамин K1 10 мг/мл — зоокумарины',dog:2.5,cat:2.5,unit:'mg/kg',conc:10,form:'inj',note:'1-е пок.: старт 2.5 мг/кг п/к, в/м, затем 1–2.5 мг/кг п/о q8–12h 5–7 дн. 2-е пок.: старт 5 мг/кг, затем 2.5 мг/кг q12h 3 нед. Неизвестный: старт 2.5–5, затем 2.5 мг/кг 3–4 нед.'},
+/* --- Г --- */
+{name:'Габапентин 300 мг/капс',dog:20,cat:7.5,unit:'mg/kg',conc:300,form:'tab',note:'Собаки 10–60 мг/кг/сут в 2–3 приёма. Кошки 5–10 мг/кг q8–12h. Противосудорожное, нейропатическая боль, тревога.'},
+{name:'Гентамицин 40 мг/мл',dog:5,cat:5,unit:'mg/kg',conc:40,form:'inj',note:'4–8 мг/кг п/к, в/м, в/в дробно q8–24h. Нефротоксичен.'},
+/* --- Д --- */
+{name:'Десмопрессин — несахарный диабет',dog:null,cat:null,unit:'mg/kg',conc:0.1,form:'inj',note:'Доза по протоколу/инструкции (в методичке без цифр). Нормоволемическая гипернатриемия.'},
+/* --- С, Т, У, Ф, Х, Ц, Э --- */
+{name:'Сароланер (Симпарика) 40 мг/таб',dog:2,cat:null,unit:'mg/kg',conc:40,form:'tab',note:'2 мг/кг п/о 1 р/30 дн. При пограничном весе — большая дозировка.'},
+{name:'Селамектин (Стронгхолд) 60 мг/мл капли',dog:6,cat:6,unit:'mg/kg',conc:60,form:'inj',note:'От 6 мг/кг на холку. Блохи, отодектоз, саркоптоз, токсокароз, профилактика дирофиляриоза.'},
+{name:'Силденафил 25 мг/таб',dog:1,cat:null,unit:'mg/kg',conc:25,form:'tab',note:'0.5–2.7 мг/кг п/о 1–3 р/сут (медиана 3 мг/кг/сут). Лёгочная гипертензия.'},
+{name:'Силибин (Денамарин) 50 мг/таб',dog:50,cat:50,unit:'mg/kg',conc:50,form:'tab',note:'Skleroznik: 50–250 мг/кг п/о 1 р/сут курсом 3–4 мес. УТОЧНИТЬ: в других источниках дозы в мг на животное.'},
+{name:'Смекта 3 г/пакет',dog:null,cat:null,unit:'mg/kg',conc:3000,form:'tab',note:'Кошки и мелкие собаки 0.5–1 пакет в 2–3 приёма; средние/крупные собаки от 1 пакета. Развести до жидкой сметаны. Большой объём — рвота.'},
+{name:'Спиронолактон (Верошпирон) 25 мг/таб',dog:2,cat:2,unit:'mg/kg',conc:25,form:'tab',note:'2–4 мг/кг п/о 1 р/сут. ХСН, гиперальдостеронизм.'},
+{name:'Сукральфат 1000 мг/таб',dog:500,cat:250,unit:'mg (fixed)',conc:1000,form:'tab',note:'Собаки <20 кг 500 мг q6–8h; >20 кг 1–2 г q6–8h. Кошки 250 мг q8–12h. Язвы, эрозии.'},
+{name:'Теофиллин 100 мг/таб',dog:10,cat:15,unit:'mg/kg',conc:100,form:'tab',note:'Собаки 10 мг/кг q12h; кошки 15–19 мг/кг 1 р/сут. Бронхолитик.'},
+{name:'Теразозин 2 мг/таб',dog:0.5,cat:0.25,unit:'mg (fixed)',conc:2,form:'tab',note:'Собаки <20 кг 0.5 мг/жив/сут; 20–50 кг 1 мг; >50 кг 2 мг. Кошки 0.25–0.5 мг/жив/сут, старт с минимальной.'},
+{name:'Тербинафин 250 мг/таб',dog:20,cat:20,unit:'mg/kg',conc:250,form:'tab',note:'20–40 мг/кг п/о 1 р/сут (возможна пульс-терапия). Дерматофития.'},
+{name:'Тиамазол 2.5 мг/таб',dog:2.5,cat:2.5,unit:'mg (fixed)',conc:2.5,form:'tab',note:'Собаки 2.5–5 мг/собаку п/о 2 р/сут; кошки 2.5 мг/кошку 2 р/сут. Гипертиреоз.'},
+{name:'Тилозин 50 мг/мл',dog:5,cat:5,unit:'mg/kg',conc:50,form:'inj',note:'5–10 мг/кг в/м 1 р/сут.'},
+{name:'Трамадол 50 мг/мл',dog:3,cat:3,unit:'mg/kg',conc:50,form:'inj',note:'3 мг/кг в/м или в/в каждые 8–12 ч.'},
+{name:'Трилостан (Веторил) 30 мг/капс — собаки',dog:2,cat:null,unit:'mg/kg',conc:30,form:'tab',note:'2–5 мг/кг п/о 1 р/сут, старт с минимальной. Гиперадренокортицизм.'},
+{name:'Трилостан (Веторил) — кошки',dog:null,cat:30,unit:'mg (fixed)',conc:30,form:'tab',note:'30 мг на кошку п/о 1 р/сут.'},
+{name:'Тримебутин 100 мг/таб',dog:8,cat:8,unit:'mg/kg',conc:100,form:'tab',note:'8 мг/кг п/о 2–3 р/сут. Спазмолитик.'},
+{name:'Урсодезоксихолиевая кислота 250 мг/капс',dog:10,cat:10,unit:'mg/kg',conc:250,form:'tab',note:'10–15 мг/кг п/о 1 р/сут. Гепатопротектор.'},
+{name:'Фамотидин 20 мг/таб',dog:0.5,cat:0.5,unit:'mg/kg',conc:20,form:'tab',note:'0.5–1 мг/кг п/о или в/в 1–2 р/сут. Гастропротектор.'},
+{name:'Фамцикловир 250 мг/таб — кошки',dog:null,cat:40,unit:'mg/kg',conc:250,form:'tab',note:'40 мг/кг q8–12h (дольше курс) или 90 мг/кг q8–12h (высокая эффективность); или 62.5–125 мг/кошку 1–3 р/сут. Герпес-конъюнктивит/ринит.'},
+{name:'Феназепам 1 мг/мл',dog:0.05,cat:0.05,unit:'mg/kg',conc:1,form:'inj',note:'0.05 мг/кг 2 р/сут. Транквилизатор, противосудорожное.'},
+{name:'Фенбендазол 150 мг/таб',dog:50,cat:50,unit:'mg/kg',conc:150,form:'tab',note:'Собаки: щенки <6 мес 50 мг/кг 3 дн; >6 мес 100 мг/кг однократно; лямблиоз 50 мг/кг 5 дн. Кошки: котята 20 мг/кг 5 дн; >6 мес 100 мг/кг; лямблиоз 50 мг/кг 5–7 дн.'},
+{name:'Фенилпропаноламин 50 мг/мл — собаки',dog:0.8,cat:null,unit:'mg/kg',conc:50,form:'inj',note:'0.8 мг/кг п/о 3 р/сут или 1.2 мг/кг 2 р/сут. Недержание мочи. В РФ не поставляется.'},
+{name:'Филграстим 300 мкг/мл',dog:5,cat:5,unit:'mcg/kg',conc:300,form:'inj',note:'1–5 мкг/кг (100–500 тыс ЕД) п/к 1 р/сут курсом 3–5 дн. Нейтропения после цитостатиков.'},
+{name:'Фирококсиб (Превикокс) 57 мг/таб — собаки',dog:5,cat:null,unit:'mg/kg',conc:57,form:'tab',note:'5 мг/кг п/о 1 р/сут. ЗАПРЕЩЁН кошкам, беременным, щенкам <10 нед и <3 кг.'},
+{name:'Флураланер (Бравекто) 500 мг/таб — собаки',dog:25,cat:null,unit:'mg/kg',conc:500,form:'tab',note:'25–56 мг/кг п/о 1 р/12 нед.'},
+{name:'Флуконазол 50 мг/капс',dog:10,cat:10,unit:'mg/kg',conc:50,form:'tab',note:'10–20 мг/кг п/о 1–2 р/сут.'},
+{name:'Ипакитине (хитозан) порошок',dog:null,cat:null,unit:'mg/kg',conc:1000,form:'tab',note:'200 мг/кг п/о 2 р/сут с едой. ХБП, связывание фосфора. Введите дозу вручную.'},
+{name:'Хлорамбуцил 2 мг/таб',dog:0.1,cat:null,unit:'mg/kg',conc:2,form:'tab',note:'Собаки: пемфигус/аутоиммун 0.1–0.2 мг/кг q24h; лимфома 15–20 мг/м² q2 нед или 2–6 мг/м² q24–48h. Кошки: 2 мг/животное q48h (>4 кг) или q72h (<4 кг).'},
+{name:'Цефазолин 1000 мг/фл',dog:20,cat:20,unit:'mg/kg',conc:100,form:'inj',note:'20–35 мг/кг в/м, в/в 2–3 р/сут. НЕ с петлевыми диуретиками (нефротоксичность).'},
+{name:'Цефалексин 500 мг/капс',dog:15,cat:15,unit:'mg/kg',conc:500,form:'tab',note:'10–25 мг/кг п/о 2–3 р/сут; дерматология 22–30 мг/кг 2 р/сут длительно.'},
+{name:'Цефкином (Кобактан) 25 мг/мл',dog:2.5,cat:2.5,unit:'mg/kg',conc:25,form:'inj',note:'2.5 мг/кг в/м 1 р/сут.'},
+{name:'Цефовецин (Конвения) 80 мг/мл',dog:8,cat:8,unit:'mg/kg',conc:80,form:'inj',note:'8 мг/кг п/к однократно (=1 мл на 10 кг), действие 14 дней.'},
+{name:'Цефотаксим 1000 мг/фл',dog:20,cat:20,unit:'mg/kg',conc:100,form:'inj',note:'20–40 мг/кг в/м, в/в, п/к 2–3 р/сут.'},
+{name:'Цефтазидим 1000 мг/фл',dog:20,cat:20,unit:'mg/kg',conc:100,form:'inj',note:'20–50 мг/кг в/м, в/в, п/к 2–3 р/сут.'},
+{name:'Цефтиофур 50 мг/мл — собаки',dog:2.2,cat:null,unit:'mg/kg',conc:50,form:'inj',note:'2.2 мг/кг п/к 1 р/сут.'},
+{name:'Цефтриаксон 1000 мг/фл',dog:25,cat:25,unit:'mg/kg',conc:100,form:'inj',note:'20–25 мг/кг 2 р/сут в/в, в/м или 50 мг/кг 1 р/сут. Болезненный в/м!'},
+{name:'Циклоспорин 100 мг/капс',dog:5,cat:7,unit:'mg/kg',conc:100,form:'tab',note:'Собаки 5 мг/кг 1–2 р/сут (атопия чаще q24h). Кошки 7 мг/кг 1 р/сут. Эффект через 2–3 нед.'},
+{name:'Циметидин 100 мг/мл',dog:5,cat:2.5,unit:'mg/kg',conc:100,form:'inj',note:'Собаки 5–10 мг/кг 3 р/сут; кошки 2.5–5 мг/кг 2 р/сут п/о, в/в, в/м.'},
+{name:'Цимикоксиб (Цималджекс) 30 мг/таб — собаки',dog:2,cat:null,unit:'mg/kg',conc:30,form:'tab',note:'2 мг/кг п/о 1 р/сут. Запрещён <10 нед и <2 кг; осторожно <6 мес.'},
+{name:'Эналаприл 5 мг/таб',dog:0.5,cat:0.25,unit:'mg/kg',conc:5,form:'tab',note:'Собаки: кардио 0.5 мг/кг q24h, через 2 нед при отсутствии ответа 0.5 мг/кг q12h; нефропатия 0.25–1 мг/кг 1–2 р/сут; гипертензия до 3 мг/кг. Кошки 0.25–0.5 мг/кг 1–2 р/сут.'},
+{name:'Энрофлоксацин 50 мг/мл',dog:5,cat:5,unit:'mg/kg',conc:50,form:'inj',note:'5 мг/кг п/к 1 р/сут или п/о 2.5 мг/кг 2 р/сут / 5 мг/кг 1 р/сут. Кошкам осторожно длительным курсом — ретинопатии.'},
+{name:'Эритропоэтин 2000 МЕ/мл',dog:50,cat:50,unit:'ED/kg',conc:2000,form:'inj',note:'50 МЕ/кг в/в, п/к 3 р/нед до нормализации гематокрита (при слабом ответе до 100 МЕ/кг; менять дозу 1 р/3 нед). Анемия ХБП, НЕ гемолитическая/постгеморрагическая.'},
+{name:'Мелоксикам 1.5 мг/мл (уточнить)',dog:0.2,cat:0.1,unit:'mg/kg',conc:1.5,form:'inj',note:'Собаки 0.2 мг/кг 1-й день, затем 0.1 мг/кг q24h. Кошки 0.1 мг/кг однократно п/к. Осторожно при ХБП, ЖКТ, обезвоживании.'},
+{name:'Метоклопрамид 5 мг/мл (уточнить)',dog:0.5,cat:0.5,unit:'mg/kg',conc:5,form:'inj',note:'0.5–1 мг/кг в/в, в/м, п/к q6–8h. Прокинетик, противорвотное.'},
+{name:'Ондансетрон 2 мг/мл (уточнить)',dog:0.5,cat:0.5,unit:'mg/kg',conc:2,form:'inj',note:'0.5–1 мг/кг в/в или п/о q8–12h. Тяжёлая рвота.'},
+{name:'Маропитант (Серения) 10 мг/мл (уточнить)',dog:1,cat:1,unit:'mg/kg',conc:10,form:'inj',note:'1 мг/кг п/к или в/в 1 р/сут. Антагонист NK-1.'},
+{name:'Омепразол 20 мг/таб (уточнить)',dog:0.5,cat:0.5,unit:'mg/kg',conc:20,form:'tab',note:'0.5–1 мг/кг п/о 1 р/сут. Ингибитор протонной помпы.'}
 ];
-
-const bSpecies=document.getElementById('bSpecies');
-const bDrug=document.getElementById('bDrug');
-const bWeight=document.getElementById('bWeight');
-const bDose=document.getElementById('bDose');
-const bConc=document.getElementById('bConc');
-const bConcLabel=document.getElementById('bConcLabel');
-const bNote=document.getElementById('bNote');
-const res2=document.getElementById('res2');
-
-const unitLabel={'mg/kg':'мг','mcg/kg':'мкг','ED/kg':'ЕД','mEq/kg':'мЭкв','ml/kg':'мл','mg (fixed)':'мг'};
-
-bolusDrugs.forEach((d,i)=>{
-  const o=document.createElement('option');
-  o.value=i; o.textContent=d.name;
-  bDrug.appendChild(o);
-});
-
-function fmtVol(v){return v<1? v.toFixed(3): v.toFixed(2)}
-function fmtD(v){return v<10? v.toFixed(2): v.toFixed(1)}
+const bSpecies=document.getElementById('bSpecies'),bDrug=document.getElementById('bDrug'),bWeight=document.getElementById('bWeight'),bDose=document.getElementById('bDose'),bConc=document.getElementById('bConc'),bConcLabel=document.getElementById('bConcLabel'),bNote=document.getElementById('bNote'),res2=document.getElementById('res2');
+const unitLabel={'mg/kg':'мг','mcg/kg':'мкг','ED/kg':'ЕД','mEq/kg':'мЭкв','ml/kg':'мл','mg (fixed)':'мг','mcg (fixed)':'мкг'};
+bolusDrugs.forEach((d,i)=>{const o=document.createElement('option');o.value=i;o.textContent=d.name;bDrug.appendChild(o)});
 function fmtTab(v){return Math.round(v*100)/100}
+function bSet(){const d=bolusDrugs[Number(bDrug.value)];const dose=(bSpecies.value==='dog')?d.dog:d.cat;bDose.value=(dose===null||dose===undefined)?'':dose;bConc.value=d.conc||'';bConcLabel.style.display=(d.unit==='ml/kg')?'none':'block';bNote.value=d.note||'';bCalc()}
+function bCalc(){const d=bolusDrugs[Number(bDrug.value)];const kg=Number(bWeight.value),dose=Number(bDose.value),conc=Number(bConc.value);
+if(d.unit!=='mg (fixed)'&&d.unit!=='mcg (fixed)'&&(!kg||kg<=0)){res2.textContent='Введите массу тела.';return}
+if(!dose||dose<=0){res2.textContent='Введите дозу (диапазоны и схемы — в примечании).';return}
+if(d.unit==='ml/kg'){res2.innerHTML='Объём на введение: <b>'+fmtVol(kg*dose)+' мл</b>';return}
+if(!(conc>0)){res2.textContent='Введите концентрацию.';return}
+const total=(d.unit.indexOf('fixed')>=0)?dose:kg*dose;const vol=total/conc;const u=unitLabel[d.unit];
+if(d.form==='tab'){res2.innerHTML='Доза на приём: <b>'+fmtD(total)+' '+u+'</b><br>Таблетки/капсулы: <b>'+fmtTab(vol)+' таб</b>'}
+else{res2.innerHTML='Доза на введение: <b>'+fmtD(total)+' '+u+'</b><br>Объём: <b>'+fmtVol(vol)+' мл</b>'}}
+[bSpecies,bWeight,bDose,bConc].forEach(el=>{el.addEventListener('input',bCalc);el.addEventListener('change',bCalc)});
+bDrug.addEventListener('change',bSet);bSet();
 
-function bSet(){
-  const d=bolusDrugs[Number(bDrug.value)];
-  const dose=(bSpecies.value==='dog')? d.dog : d.cat;
-  bDose.value=(dose===null||dose===undefined)?'':dose;
-  bConc.value=d.conc||'';
-  bConcLabel.style.display=(d.unit==='ml/kg')?'none':'block';
-  bNote.value=d.note||'';
-  bCalc();
-}
+/* ===== ВКЛАДКА 3: ИПС ===== */
+const ipsDrugs=[
+{name:'Норадреналин 1 мг/мл — мкг/кг/мин',dose:0.1,conc:1,unit:'mcg/kg/min',note:'Старт 0.1–0.5 мкг/кг/мин (кошки с 0.1), до 2 мкг/кг/мин. Рефрактерный шок, САД <65 мм рт.ст. Отдельный катетер/3-х кранник!'},
+{name:'Адреналин 1 мг/мл — мкг/кг/мин (анафилаксия)',dose:0.05,conc:1,unit:'mcg/kg/min',note:'0.05 мкг/кг/мин, старт 1 мл/ч. После болюсов анафилаксии.'},
+{name:'Добутамин 12.5 мг/мл — мкг/кг/мин',dose:5,conc:12.5,unit:'mcg/kg/min',note:'5–15 мкг/кг/мин. Противопоказан кошкам с обструктивной ГКМП.'},
+{name:'Лидокаин 20 мг/мл — собаки, мкг/кг/мин',dose:50,conc:20,unit:'mcg/kg/min',note:'50–75 мкг/кг/мин после болюса 2 мг/кг в/в медленно.'},
+{name:'Лидокаин 20 мг/мл — кошки, мкг/кг/мин',dose:10,conc:20,unit:'mcg/kg/min',note:'10–20 мкг/кг/мин после болюса 0.2–0.5 мг/кг медленно.'},
+{name:'Фуросемид 10 мг/мл — мг/кг/ч',dose:0.5,conc:10,unit:'mg/kg/h',note:'ИПС 0.2–1 мг/кг/ч ПОСЛЕ болюса 0.5–1 мг/кг. Кардиогенный отек легких.'},
+{name:'KCl 4% (0.54 мЭкв/мл) — мЭкв/кг/ч',dose:0.5,conc:0.54,unit:'mEq/kg/h',note:'МАКСИМУМ 0.5 ммоль/кг/ч. Периферия: ≤40–60 мЭкв/л. См. вкладку Электролиты.'},
+{name:'Магния сульфат 25% (2 мЭкв/мл) — мЭкв/кг/ч',dose:0.03,conc:2,unit:'mEq/kg/h',note:'Дефицит 1–2 сут: 0.03–0.04 мЭкв/кг/ч. Поддержка: 0.013–0.02 мЭкв/кг/ч.'},
+{name:'Кальция глюконат 10% — мл/кг/ч',dose:0.5,conc:0,unit:'ml/kg/h',note:'0.5–1 мл/кг/ч на 3–4 ч (разведение 1:5 или 1:10); после болюса 0.25–0.5 мл/кг/ч в почасовой потребности NaCl.'},
+{name:'NaCl 3% — мл/кг/ч (гипонатриемия)',dose:1,conc:0,unit:'ml/kg/h',note:'0.5–2 мл/кг/ч первые 48 ч. Коррекция ≤0.5 мЭкв/л/ч, ≤10–12 мЭкв/л/сут.'}
+];
+const ipsDrug=document.getElementById('ipsDrug'),ipsWeight=document.getElementById('ipsWeight'),ipsDose=document.getElementById('ipsDose'),ipsConc=document.getElementById('ipsConc'),ipsSyringe=document.getElementById('ipsSyringe'),ipsRate=document.getElementById('ipsRate'),ipsNote=document.getElementById('ipsNote'),res3=document.getElementById('res3');
+ipsDrugs.forEach((d,i)=>{const o=document.createElement('option');o.value=i;o.textContent=d.name;ipsDrug.appendChild(o)});
+function ipsSet(){const d=ipsDrugs[Number(ipsDrug.value)];ipsDose.value=d.dose;ipsConc.value=d.conc||'';ipsNote.value=d.note||'';ipsCalc()}
+function ipsCalc(){const d=ipsDrugs[Number(ipsDrug.value)];const kg=Number(ipsWeight.value),dose=Number(ipsDose.value),conc=Number(ipsConc.value),syr=Number(ipsSyringe.value),rate=Number(ipsRate.value);
+if(!kg||kg<=0){res3.textContent='Введите массу тела.';return}
+if(!dose||dose<=0){res3.textContent='Введите целевую дозу.';return}
+if(!rate||rate<=0){res3.textContent='Введите скорость инфузомата.';return}
+if(d.unit==='ml/kg/h'){const pump=dose*kg;res3.innerHTML='Скорость на инфузомате: <b>'+r1(pump)+' мл/ч</b> ('+dose+' мл/кг/ч × '+kg+' кг)<br>За 24 ч: <b>'+r1(pump*24)+' мл</b>';return}
+let perHour;
+if(d.unit==='mcg/kg/min'){perHour=(dose*kg*60)/1000}else if(d.unit==='mg/kg/h'){perHour=dose*kg}else{perHour=dose*kg}
+if(!(conc>0)){res3.textContent='Введите концентрацию ампулы.';return}
+const hours=syr/rate,totalMg=perHour*hours,ampMl=totalMg/conc,dil=syr-ampMl;
+if(ampMl>syr){res3.innerHTML='<b>Ошибка:</b> нужный объём препарата ('+fmtVol(ampMl)+' мл) больше объёма шприца. Увеличьте шприц или скорость.';return}
+res3.innerHTML='Потребность: <b>'+perHour.toFixed(3)+' мг/ч</b> ('+(d.unit==='mEq/kg/h'?perHour.toFixed(3)+' мЭкв/ч':'')+')<br>Время работы шприца: <b>'+hours.toFixed(1)+' ч</b><br>Всего препарата: <b>'+totalMg.toFixed(2)+' мг</b><br>Из ампулы: <b>'+fmtVol(ampMl)+' мл</b><br>Развести до '+syr+' мл: добавить <b>'+r1(dil)+' мл</b> NaCl 0.9% или глюкозы 5%<br>Скорость инфузомата: <b>'+rate+' мл/ч</b>'}
+[ipsWeight,ipsDose,ipsConc,ipsSyringe,ipsRate].forEach(el=>{el.addEventListener('input',ipsCalc);el.addEventListener('change',ipsCalc)});
+ipsDrug.addEventListener('change',ipsSet);ipsSet();
 
-function bCalc(){
-  const d=bolusDrugs[Number(bDrug.value)];
-  const kg=Number(bWeight.value);
-  const dose=Number(bDose.value);
-  const conc=Number(bConc.value);
-
-  if(d.unit!=='mg (fixed)' && (!kg||kg<=0)){res2.textContent='Введите массу тела.';return}
-  if(!dose||dose<=0){res2.textContent='Введите дозу (диапазон — в примечании).';return}
-
-  if(d.unit==='ml/kg'){
-    res2.innerHTML='Объем на введение: <b>'+fmtVol(kg*dose)+' мл</b>';
-    return;
-  }
-  if(!(conc>0)){res2.textContent='Введите концентрацию.';return}
-
-  const total=(d.unit==='mg (fixed)')? dose : kg*dose;
-  const vol=total/conc;
-  const u=unitLabel[d.unit];
-  if(d.form==='tab'){
-    res2.innerHTML='Доза на приём: <b>'+fmtD(total)+' '+u+'</b><br>Таблетки: <b>'+fmtTab(vol)+' таб</b>';
-  }else{
-    res2.innerHTML='Доза на введение: <b>'+fmtD(total)+' '+u+'</b><br>Объем: <b>'+fmtVol(vol)+' мл</b>';
-  }
-}
-
-[bSpecies,bWeight,bDose,bConc].forEach(el=>{
-  el.addEventListener('input',bCalc);
-  el.addEventListener('change',bCalc);
-});
-bDrug.addEventListener('change',bSet);
-bSet();
+/* ===== ВКЛАДКА 4: ЭЛЕКТРОЛИТЫ ===== */
+const eSit=document.getElementById('eSit'),eWeight=document.getElementById('eWeight'),eSpecies=document.getElementById('eSpecies'),eK=document.getElementById('eK'),eNaCur=document.getElementById('eNaCur'),eNaT=document.getElementById('eNaT'),eHydr=document.getElementById('eHydr'),eCaD=document.getElementById('eCaD'),eKSel=document.getElementById('eKSel'),eFlask=document.getElementById('eFlask'),eRate4=document.getElementById('eRate'),eHours=document.getElementById('eHours'),eMgD=document.getElementById('eMgD'),eSol=document.getElementById('eSol'),res4=document.getElementById('res4'),eNote=document.getElementById('eNote');
+const vis={hypoK:['gK'],hyperK:[],hypoCa:['gSpecies','gHydr','gCaD','gFlask'],hyperCa:['gKSel','gFlask'],soda:['gHours'],hypoNa:['gNaCur','gNaT','gSol'],hyperNa:['gNaCur','gNaT','gSol'],hypoMg:['gMgD','gFlask','gRate'],hyperMg:[]};
+function eShow(){const s=eSit.value;['gK','gNaCur','gNaT','gHydr','gCaD','gKSel','gFlask','gRate','gHours','gMgD','gSol','gSpecies'].forEach(id=>{document.getElementById(id).style.display=vis[s].indexOf(id)>=0?'block':'none'});eCalc()}
+function eCalc(){const s=eSit.value,kg=Number(eWeight.value);
+if(!kg||kg<=0){res4.textContent='Введите массу тела.';return}
+let out='';
+if(s==='hypoK'){const K=Number(eK.value);if(!K){res4.textContent='Введите калий крови.';return}
+const maxM=0.5*kg,maxMl=maxM/0.54;
+let h=0;if(K>=3&&K<=3.5)h=4;else if(K>=2.5&&K<3)h=7;else if(K>=2&&K<2.5)h=8;
+out='Макс. скорость KCl: <b>'+r2(maxM)+' мЭкв/ч</b> (0.5 ммоль/кг/ч) = <b>'+r1(maxMl)+' мл/ч KCl 4%</b><br>';
+if(h>0){const kcl=0.8*kg*h,tot=kcl*2,pump=tot/h;
+out+='Метод Кикоть (болюс в яремную): K '+K+' ммоль/л → длительность <b>'+h+' ч</b><br>KCl 4%: 0.8 мл/кг/ч × '+kg+' кг × '+h+' ч = <b>'+r1(kcl)+' мл</b><br>Разведение 1:1 с NaCl 0.9%: итого <b>'+r1(tot)+' мл</b><br>Скорость инфузомата: <b>'+r1(pump)+' мл/ч</b><br>Концентрация в 50 мл шприце: '+r2(kcl*0.54/0.05)+' мЭкв/л (норма периферии 40–60)'}
+else{out+='Для K вне диапазона 2.0–3.5 ммоль/л метод Кикоть не применим — считайте периферическую ИПС по макс. скорости.'}
+eNote.textContent='1 мЭкв K = 1 ммоль = 39.1 мг. KCl 4%: 1 мл = 0.54 мЭкв. Таблица Кикоть: K 3.0–3.5 → 4 ч; 2.5–3.0 → 6–8 ч; 2.0–2.5 → 8 ч.'}
+else if(s==='hyperK'){out='1) Кальция глюконат 10%: <b>'+r1(0.5*kg)+'–'+r1(1*kg)+' мл</b> в/в >20 мин, развести в физрастворе, под ЭКГ<br>2) Инсулин короткий: <b>'+r2(0.25*kg)+'–'+r2(0.5*kg)+' ЕД</b> в/в<br>3) Декстроза: <b>'+r1(1*0.25*kg)+'–'+r1(2*0.5*kg)+' г</b> (1–2 г на 1 ЕД), развести до 5–20%, затем ИПС 2.5–5% декстрозы 4–6 ч<br>4) ИПС изотоником по статусу (см. ниже)';
+eNote.textContent='Скорости ИПС: не обезвожена и мочится 3 мл/кг/ч; обезвожена, диурез сохранён 4–6; анурия/олигурия 1–2; постобструктивный диурез до 7–12; кардиопатия 1.5–2 мл/кг/ч под контроль ЧДД. Сначала устранить обструкцию уретры! Степени: лёгкая 5.5–6.5, средняя 6.5–8.5, тяжёлая >8.5 ммоль/л.'}
+else if(s==='hypoCa'){const dCa=Number(eCaD.value),flask=Number(eFlask.value)||500,hydr=eHydr.value,sp=eSpecies.value;
+let totRate;if(hydr==='0')totRate=(sp==='dog')?3:2;else if(hydr==='56')totRate=(sp==='dog')?5.5:4;else totRate=1.75;
+const caRate=dCa*kg,totMl=totRate*kg,naclMl=totMl-caRate;
+if(naclMl<=0){res4.innerHTML='<b>Ошибка:</b> потребность кальция ('+r1(caRate)+' мл/ч) превышает общую скорость ('+r1(totMl)+' мл/ч). Уменьшите дозу Ca или увеличьте общую скорость.';return}
+const hrs=flask/totMl,caFlask=caRate*hrs,naclFlask=flask-caFlask;
+out='Потребность Ca: <b>'+r1(caRate)+' мл/ч</b> ('+dCa+' мл/кг/ч × '+kg+' кг)<br>Общая скорость: <b>'+r1(totMl)+' мл/ч</b> ('+totRate+' мл/кг/ч)<br>NaCl 0.9% скоростью: <b>'+r1(naclMl)+' мл/ч</b><br>Флакон '+flask+' мл хватит на <b>'+hrs.toFixed(1)+' ч</b><br>Ca глюконата 10% во флакон: <b>'+r1(caFlask)+' мл</b><br>NaCl 0.9% во флакон: <b>'+r1(naclFlask)+' мл</b>';
+eNote.textContent='Почасовая потребность (общая скорость): без обезвоживания собаки 3, кошки 2 мл/кг/ч; 5–6% — собаки 5–6, кошки 4; 8–10%/кардио/ОПП — все 1.5–2 мл/кг/ч. Контроль Ca q12h, ЭКГ/аускультация постоянно. Дома: Ca карбонат 50–100 мг/кг/сут в 2–3 приёма, вит. D3 0.01–0.03 мкг/кг/сут.'}
+else if(s==='hyperCa'){const fl=Number(eFlask.value)||500,ks=eKSel.value;let kcl;
+if(ks==='norm')kcl=[9,18];else if(ks==='3035')kcl=[28,28];else kcl=[37,37];
+const k1=kcl[0]*fl/500,k2=kcl[1]*fl/500;
+out='NaCl 0.9%: скорость <b>'+r1(4*kg)+'–'+r1(6*kg)+' мл/ч</b> (4–6 мл/кг/ч)<br>Рецепт на флакон <b>'+fl+' мл</b>: NaCl <b>'+r1(fl-k2)+'–'+r1(fl-k1)+' мл</b> + KCl 4% <b>'+r1(k1)+'–'+r1(k2)+' мл</b><br>Фуросемид 2–4 мг/кг q8–12h — ТОЛЬКО после восполнения ОЦК';
+eNote.textContent='Рецепты на 500 мл: K нормальный — 491–482 мл NaCl + 9–18 мл KCl 4% (5–10 мЭкв); K 3.0–3.5 — 472 мл + 28 мл (15 мЭкв); K <3.0 — 463 мл + 37 мл (20 мЭкв). Ca×P >46.5 — бисфосфонаты. ГКС только после цитологии!'}
+else if(s==='soda'){const hrs=Number(eHours.value)||3,dose=1;const soda=dose*kg,gluc=soda*4,tot=soda+gluc,pump=tot/hrs;
+out='Сода 8.4% (1 мЭкв/мл): <b>'+r1(soda)+' мл</b> (1 мЭкв/кг; диапазон 0.5–1)<br>Глюкоза 5% (1:4): <b>'+r1(gluc)+' мл</b><br>Готовый раствор: <b>'+r1(tot)+' мл</b><br>Скорость инфузомата на '+hrs+' ч: <b>'+r1(pump)+' мл/ч</b>';
+eNote.textContent='Диапазон дозы 0.5–1 мЭкв/кг за 2–4 ч. Пример методички: 5 кг, 1 мЭкв/кг → 5 мл соды + 20 мл глюкозы = 25 мл / 3 ч = 8.3 мл/ч.'}
+else if(s==='hypoNa'){const cur=Number(eNaCur.value),tgt=Number(eNaT.value)||cur+8,sol=Number(eSol.value);
+if(!cur){res4.textContent='Введите натрий крови.';return}
+const rise=tgt-cur;if(rise<=0){res4.textContent='Целевой Na должен быть выше текущего.';return}
+const hours=rise/0.5,perL=(sol-cur)/((kg*0.6)+1),deficit=kg*0.6*rise,rate=(kg*0.6*rise*1000)/(sol*hours);
+out='Прирост: <b>'+rise+' ммоль/л</b> за <b>'+hours.toFixed(1)+' ч</b> (0.5 мЭкв/л/ч)<br>Дефицит Na: <b>'+r1(deficit)+' мЭкв</b><br>Изменение Na с 1 л раствора: <b>'+r2(perL)+' мЭкв/л</b>; с 0.5 л: <b>'+r2(perL*0.5)+' мЭкв</b><br>Скорость инфузии: <b>'+r1(rate)+' мл/ч</b><br>Неврология (судороги, Na<120): болюс 3% NaCl 2–6 мл/кг за 10–15 мин';
+eNote.textContent='Макс +0.5 мЭкв/л/ч, ≤10–12 мЭкв/л/24 ч. Na растворов: 3% = 513, 0.9% = 154, LRS = 130 ммоль/л. Нормо/гиперволемия: толваптан 3 мг/кг q12h или фуросемид.'}
+else if(s==='hyperNa'){const cur=Number(eNaCur.value),tgt=Number(eNaT.value)||cur-12,sol=Number(eSol.value);
+if(!cur){res4.textContent='Введите натрий крови.';return}
+const fall=cur-tgt;if(fall<=0){res4.textContent='Целевой Na должен быть ниже текущего.';return}
+const hours=fall/0.5,perL=Math.abs((sol-cur)/((kg*0.6)+1)),volL=fall/perL,rate=volL*1000/hours,defV=kg*0.6*((cur/tgt)-1);
+out='Снижение: <b>'+fall+' ммоль/л</b> за <b>'+hours.toFixed(1)+' ч</b> (0.5 мЭкв/л/ч)<br>Изменение Na с 1 л: <b>'+r2(perL)+' мЭкв/л</b><br>Объём раствора: <b>'+(volL*1000).toFixed(0)+' мл</b><br>Скорость инфузии: <b>'+r1(rate)+' мл/ч</b><br>Дефицит свободной воды: <b>'+r2(defV)+' л</b>';
+eNote.textContent='Макс −0.5 мЭкв/л/ч, ≤10–12 мЭкв/л/24 ч. Гиповолемия: сначала шоковые болюсы, затем 0.45% NaCl 1:1 с 5% глюкозой / 5% глюкоза / LRS. Нормоволемия: доступ к воде, 5% глюкоза в/в, несахарный диабет — десмопрессин. Гиперволемия: 5% глюкоза в/в + фуросемид 2–4 мг/кг.'}
+else if(s==='hypoMg'){const d=Number(eMgD.value),fl=Number(eFlask.value)||500,rt=Number(eRate4.value)||10;
+if(!d){res4.textContent='Введите дозу Mg.';return}
+const perH=d*kg,hrs=fl/rt,tot=perH*hrs,vol=tot/2;
+out='Потребность: <b>'+r2(perH)+' мЭкв/ч</b><br>Время флакона: <b>'+hrs.toFixed(1)+' ч</b><br>Всего Mg на флакон: <b>'+r2(tot)+' мЭкв</b><br>Mg сульфата 25% (2 мЭкв/мл) во флакон: <b>'+fmtVol(vol)+' мл</b><br>Развести до '+fl+' мл NaCl 0.9% или 5% декстрозы';
+eNote.textContent='Дефицит 1–2 сут: 0.03–0.04 мЭкв/кг/ч. Поддержка: 0.013–0.02 мЭкв/кг/ч. Аритмия: болюс 0.15–0.3 мЭкв/кг за 5–15 мин (до 60 мин) — см. вкладку Болюсы.'}
+else if(s==='hyperMg'){out='1) Кальция глюконат 10%: <b>'+r1(0.5*kg)+'–'+r1(1*kg)+' мл</b> в/в медленно за 15–30 мин (при шоке/аритмии)<br>2) Физостигмин: <b>'+r2(0.02*kg)+' мг</b> в/в (0.02 мг/кг) — только вместе с кальцием<br>3) Фуросемид в/в — строго после восстановления ОЦК<br>Стабильным по сердцу: сразу инфузия 0.9% NaCl (если нет анурии и СН)';
+eNote.textContent='Пороги: собаки общий Mg >2.51 мг/дл (своб. >0.6 ммоль/л); кошки общий >2.99 мг/дл (своб. >0.7 ммоль/л).'}
+res4.innerHTML=out}
+[eSit,eWeight,eSpecies,eK,eNaCur,eNaT,eHydr,eCaD,eKSel,eFlask,eRate4,eHours,eMgD,eSol].forEach(el=>{el.addEventListener('input',eCalc);el.addEventListener('change',eShow)});
+eShow();
 </script>
 </body>
 </html>
