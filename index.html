@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Калькулятор Лямур</title>
+<title>Калькулятор</title>
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#f6f8fa;color:#1f2937}
 main{max-width:900px;margin:24px auto;padding:20px;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
@@ -30,8 +30,7 @@ textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
 </head>
 <body>
 <main>
-<h1>Калькулятор ОРИТ — Лямур</h1>
-<div class="warning">Для внутреннего использования врачами клиники. Дозы из методички ОРИТ и базы skleroznik.ru. Всегда сверяйте вид, дозу, концентрацию и противопоказания с инструкцией к препарату.</div>
+<h1>Калькулятор</h1>
 <div class="tabs">
 <button id="tabBtn1" class="active" onclick="openTab(1)">Инфузии</button>
 <button id="tabBtn2" onclick="openTab(2)">Болюсы</button>
@@ -46,7 +45,6 @@ textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
 <label>Обезвоживание, %<input id="dehyd" type="number" min="0" step="0.5" inputmode="decimal" placeholder="0, если нет"></label>
 <label>Текущие потери (рвота/диарея/моча), мл/сут<input id="losses" type="number" min="0" step="1" inputmode="decimal" placeholder="0, если нет"></label>
 <div class="result" id="res1">Введите данные — расчёт автоматический.</div>
-<div class="small">Аллометрическая формула — при массе &lt;2 кг и &gt;30 кг. Шоковый болюс: собаки 15–20 мл/кг за 10–15 мин, кошки 5–10 мл/кг за 15–20 мин; микроболюс сердечникам 1–3 мл/кг. Кошки до болюса: грелка + O2 до T ≥37.0 ℃, раствор греть до 40–42 ℃.</div>
 </div>
 
 <div id="page2" class="tab-page">
@@ -55,11 +53,10 @@ textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
 <span class="cb-wrap"><input id="bDrugInput" type="text" placeholder="Клик — весь список; начни печатать — фильтр" autocomplete="off"><div id="bDrugList" class="cb-list"></div></span>
 </label>
 <label>Масса тела, кг<input id="bWeight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 4"></label>
-<label>Доза (мг/кг, мл/кг, ЕД/кг, мЭкв/кг, мкг/кг или фикс. на животное)<input id="bDose" type="number" min="0" step="0.01" inputmode="decimal"></label>
-<label id="bConcLabel">Концентрация (мг/мл, мг/таб, ЕД/мл, мЭкв/мл, мкг/мл)<input id="bConc" type="number" min="0" step="0.01" inputmode="decimal"></label>
+<label>Доза<input id="bDose" type="number" min="0" step="0.01" inputmode="decimal"></label>
+<label id="bConcLabel">Концентрация<input id="bConc" type="number" min="0" step="0.01" inputmode="decimal"></label>
 <label>Примечание<textarea id="bNote" readonly></textarea></label>
 <div class="result" id="res2">Выберите препарат и введите массу.</div>
-<div class="small">Клик по полю открывает список, печать сужает его (ищет и по примечаниям: напиши «рвота»). Стрелки ↑↓ + Enter — выбор с клавиатуры, Esc — закрыть. Позиции «уточнить» сверьте с инструкцией.</div>
 </div>
 
 <div id="page3" class="tab-page">
@@ -75,20 +72,19 @@ textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
 <label>Скорость инфузомата, мл/ч<input id="ipsRate" type="number" min="0.1" step="0.1" inputmode="decimal" value="2"></label>
 <label>Примечание<textarea id="ipsNote" readonly></textarea></label>
 <div class="result" id="res3">Введите данные для расчёта ИПС.</div>
-<div class="small">Формула: (доза × кг × 60)/1000 = мг/ч (для мкг/кг/мин). Инотропы/вазопрессоры — только отдельный катетер или 3-х кранник, НЕ смешивать с изотониками.</div>
 </div>
 
 <div id="page4" class="tab-page">
 <label>Ситуация<select id="eSit">
-<option value="hypoK">Гипокалиемия — KCl 4%</option>
-<option value="hyperK">Гиперкалиемия — протокол</option>
-<option value="hypoCa">Гипокальциемия — ИПС кальция</option>
-<option value="hyperCa">Гиперкальциемия — форсированный диурез</option>
-<option value="soda">Сода 8.4% — гиперкальциемический криз</option>
-<option value="hypoNa">Гипонатриемия — коррекция Na</option>
-<option value="hyperNa">Гипернатриемия — коррекция Na</option>
-<option value="hypoMg">Гипомагниемия — ИПС магния</option>
-<option value="hyperMg">Гипермагниемия — протокол</option>
+<option value="hypoK">Гипокалиемия</option>
+<option value="hyperK">Гиперкалиемия</option>
+<option value="hypoCa">Гипокальциемия</option>
+<option value="hyperCa">Гиперкальциемия</option>
+<option value="soda">Гиперкальциемический криз</option>
+<option value="hypoNa">Гипонатриемия</option>
+<option value="hyperNa">Гипернатриемия</option>
+<option value="hypoMg">Гипомагниемия</option>
+<option value="hyperMg">Гипермагниемия</option>
 </select></label>
 <div class="grid">
 <label>Масса тела, кг<input id="eWeight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 5"></label>
@@ -106,14 +102,12 @@ textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
 <label id="gSol">Раствор<select id="eSol"><option value="513">3% NaCl (513 ммоль/л)</option><option value="154">0.9% NaCl (154 ммоль/л)</option><option value="130">Рингер лактат (130 ммоль/л)</option><option value="77">0.45% NaCl (77 ммоль/л)</option><option value="0">5% глюкоза (0 ммоль/л)</option></select></label>
 </div>
 <div class="result" id="res4">Выберите ситуацию и введите данные.</div>
-<div class="small" id="eNote"></div>
 </div>
 <div id="page5" class="tab-page">
 <label>Нужный объём капель, мл<input id="uVol" type="number" min="1" step="0.5" value="10" inputmode="decimal"></label>
 <div id="uRows"></div>
 <button id="uAdd" type="button" style="margin-top:10px;padding:10px 14px;border:0;border-radius:8px;background:#2563eb;color:#fff;cursor:pointer">+ добавить компонент</button>
 <div class="result" id="res5">Укажите объём — расчёт автоматический.</div>
-<div class="small">Логика: действующие вещества сохраняют концентрацию базового рецепта (мл на 1 мл болтушки); выключенные компоненты и недостающий объём добирает разбавитель. Если снять галочку «разбавитель» — включённые компоненты масштабируются пропорционально. Рецепт редактируется прямо здесь; чтобы изменить рецепт клиники НАВСЕГДА — правь массив uRecipe в коде.</div>
 </div>
 </main>
 
@@ -153,11 +147,11 @@ const bolusDrugs=[
 {name:'NaCl 7.2–7.5%',dog:3,cat:2,unit:'ml/kg',conc:0,form:'inj',note:'Собаки: 3–5 мл/кг. Кошки: 2–3 мл/кг.'},
 {name:'NaCl 3%',dog:2,cat:2,unit:'ml/kg',conc:0,form:'inj',note:'2–6 мл/кг за 10–15 мин. Далее переход на ИПС 0.5–2 мл/кг/ч 48 ч.'},
 {name:'Натрия гидрокарбонат 8.4%',dog:0.5,cat:0.5,unit:'mEq/kg',conc:1,form:'inj',note:'0.5–1 мЭкв/кг за 2–4 ч.(см. Электролиты).'},
-{name:'Лидокаин 2% (при ЖТ,ФЖ жел. экстрасистолах)',dog:2,cat:0.25,unit:'mg/kg',conc:20,form:'inj',note:'Собаки: 2 мг/кг в/в, затем на ИПС 0,025–0,1 мг/кг/мин. Кошки: 0,25–0,5 мг/кг медленно, затем на ИПС 0,01–0,04 мг/кг/мин.'},
-{name:'Лидокаин 2% (боль)',dog:2,cat:0.25,unit:'mg/kg',conc:20,form:'inj',note:'Собаки: ИПС: 20-100 мкг/кг/мин. Кошки: ИПС 20-40 мкг/кг/мин.'},
+{name:'Лидокаин 20 мг/мл (при ЖТ,ФЖ жел. экстрасистолах)',dog:2,cat:0.25,unit:'mcg/kg',conc:20,form:'inj',note:'Собаки: 2 мг/кг в/в, затем на ИПС 0,025–0,1 мг/кг/мин. Кошки: 0,25–0,5 мг/кг медленно, затем на ИПС 0,01–0,04 мг/кг/мин.'},
+{name:'Лидокаин 20 мг/мл (боль)',dog:2,cat:0.25,unit:'mcg/kg',conc:20,form:'inj',note:'Собаки: ИПС: 20-100 мкг/кг/мин. Кошки: ИПС 20-40 мкг/кг/мин.'},
 {name:'Амиодарон 50 мг/мл',dog:5,cat:5,unit:'mg/kg',conc:50,form:'inj',note:'5–10 мг/кг в/в за 30–60 мин (желудочковая тахикардия).'},
-{name:'Золетил (Тилетамин-Золазепам) 100 мг/мл',dog:0.5,cat:0.5,unit:'mcg/kg',conc:100,form:'inj',note:'0,5-2 мг/кг в/в (индукция). ИПС: 0,25-2 мг/кг/ч.'},
-{name:'Золетил (Тилетамин-Золазепам) 50 мг/мл',dog:0.5,cat:0.5,unit:'mcg/kg',conc:50,form:'inj',note:'0,5-2 мг/кг в/в (индукция). ИПС: 0,25-2 мг/кг/ч.'},
+{name:'Золетил (Тилетамин-Золазепам) 100 мг/мл',dog:0.5,cat:0.5,unit:'mg/kg',conc:100,form:'inj',note:'0,5-2 мг/кг в/в (индукция). ИПС: 0,25-2 мг/кг/ч.'},
+{name:'Золетил (Тилетамин-Золазепам) 50 мг/мл',dog:0.5,cat:0.5,unit:'mg/kg',conc:50,form:'inj',note:'0,5-2 мг/кг в/в (индукция). ИПС: 0,25-2 мг/кг/ч.'},
 {name:'Дексдомитор 0,1 (седация, анальгезия)',dog:0.5,cat:0.5,unit:'ml/kg',form:'inj',note:'Собаки - 0,5-2,0 мл/10 кг. Кошки - 0,5 мл/кг.'},
 {name:'Дексдомитор 0,1 (премедикация)',dog:0.2,cat:0.5,unit:'ml/kg',form:'inj',note:'Собаки: для 2-3 кг - 0,2 мл. Для 3-4 кг - 0,25 мл. Для 4-5 кг - 0,35 мл. Для 5-10 кг - 0,5 мл. Для 10-13 кг - 0,65 мл. Для 13-15 кг - 0,75 мл. Для 15-20 кг - 0,85 мл. Кошки: 0,5 мл/кг.'},
 {name:'Антимедин (Атипамезол) 5 мг/мл',dog:null,cat:null,unit:'mg/kg',form:'inj',note:'Собаки: доза в мл равна введенному кол-чу мл ДДМ. Если прошел 1 час, вводим 1/2 дозы. Кошки: вводим 1/2 дозу.'},
@@ -319,19 +313,14 @@ res3.innerHTML='Потребность: <b>'+perHour.toFixed(3)+' '+uName+'/ч</
 selectI(0);
 
 /* ===== ВКЛАДКА 4: ЭЛЕКТРОЛИТЫ ===== */
-const eSit=document.getElementById('eSit'),eWeight=document.getElementById('eWeight'),eSpecies=document.getElementById('eSpecies'),eK=document.getElementById('eK'),eNaCur=document.getElementById('eNaCur'),eNaT=document.getElementById('eNaT'),eHydr=document.getElementById('eHydr'),eCaD=document.getElementById('eCaD'),eKSel=document.getElementById('eKSel'),eFlask=document.getElementById('eFlask'),eRate4=document.getElementById('eRate'),eHours=document.getElementById('eHours'),eMgD=document.getElementById('eMgD'),eSol=document.getElementById('eSol'),res4=document.getElementById('res4'),eNote=document.getElementById('eNote');
-const vis={hypoK:['gK'],hyperK:[],hypoCa:['gSpecies','gHydr','gCaD','gFlask'],hyperCa:['gKSel','gFlask'],soda:['gHours'],hypoNa:['gNaCur','gNaT','gSol'],hyperNa:['gNaCur','gNaT','gSol'],hypoMg:['gMgD','gFlask','gRate'],hyperMg:[]};
+const eSit=document.getElementById('eSit'),eWeight=document.getElementById('eWeight'),eSpecies=document.getElementById('eSpecies'),eK=document.getElementById('eK'),eNaCur=document.getElementById('eNaCur'),eNaT=document.getElementById('eNaT'),eHydr=document.getElementById('eHydr'),eCaD=document.getElementById('eCaD'),eKSel=document.getElementById('eKSel'),eFlask=document.getElementById('eFlask'),eRate4=document.getElementById('eRate'),eHours=document.getElementById('eHours'),eMgD=document.getElementById('eMgD'),eSol=document.getElementById('eSol'),res4=document.getElementById('res4');
+const vis={hypoK:[],hyperK:[],hypoCa:['gSpecies','gHydr','gCaD','gFlask'],hyperCa:['gKSel','gFlask'],soda:['gHours'],hypoNa:['gNaCur','gNaT','gSol'],hyperNa:['gNaCur','gNaT','gSol'],hypoMg:['gMgD','gFlask','gRate'],hyperMg:[]};
 function eShow(){const s=eSit.value;['gK','gNaCur','gNaT','gHydr','gCaD','gKSel','gFlask','gRate','gHours','gMgD','gSol','gSpecies'].forEach(id=>{document.getElementById(id).style.display=vis[s].indexOf(id)>=0?'block':'none'});eCalc()}
 function eCalc(){const s=eSit.value,kg=Number(eWeight.value);
 if(!kg||kg<=0){res4.textContent='Введите массу тела.';return}
 let out='';
-if(s==='hypoK'){const K=Number(eK.value);if(!K){res4.textContent='Введите калий крови.';return}
-const maxM=0.5*kg,maxMl=maxM/0.54;
-let h=0;if(K>=3&&K<=3.5)h=4;else if(K>=2.5&&K<3)h=7;else if(K>=2&&K<2.5)h=8;
-out='Макс. скорость KCl: <b>'+r2(maxM)+' мЭкв/ч</b> (0.5 ммоль/кг/ч) = <b>'+r1(maxMl)+' мл/ч KCl 4%</b><br>';
-if(h>0){const kcl=0.8*kg*h,tot=kcl*2,pump=tot/h;
-out+='Метод Кикоть (болюс в яремную): K '+K+' ммоль/л → длительность <b>'+h+' ч</b><br>KCl 4%: 0.8 мл/кг/ч × '+kg+' кг × '+h+' ч = <b>'+r1(kcl)+' мл</b><br>Разведение 1:1 с NaCl 0.9%: итого <b>'+r1(tot)+' мл</b><br>Скорость инфузомата: <b>'+r1(pump)+' мл/ч</b>'}
-else{out+='Для K вне диапазона 2.0–3.5 ммоль/л метод Кикоть не применим — считайте периферическую ИПС по макс. скорости.'}
+if(s==='hypoK'){const maxM=0.5*kg,maxMl=maxM/0.54;
+out='Макс. скорость KCl: <b>'+r2(maxM)+' мЭкв/ч</b> (0.5 ммоль/кг/ч) = <b>'+r1(maxMl)+' мл/ч KCl 4%</b>';
 eNote.textContent='1 мЭкв K = 1 ммоль = 39.1 мг. KCl 4%: 1 мл = 0.54 мЭкв. Таблица Кикоть: K 3.0–3.5 → 4 ч; 2.5–3.0 → 6–8 ч; 2.0–2.5 → 8 ч.'}
 else if(s==='hyperK'){out='1) Кальция глюконат 10%: <b>'+r1(0.5*kg)+'–'+r1(1*kg)+' мл</b> в/в >20 мин, развести в физрастворе, под ЭКГ<br>2) Инсулин короткий: <b>'+r2(0.25*kg)+'–'+r2(0.5*kg)+' ЕД</b> в/в<br>3) Декстроза: <b>'+r1(1*0.25*kg)+'–'+r1(2*0.5*kg)+' г</b> (1–2 г на 1 ЕД), развести до 5–20%, затем ИПС 2.5–5% декстрозы 4–6 ч<br>4) ИПС изотоником по статусу (см. ниже)';
 eNote.textContent='Скорости ИПС: не обезвожена и мочится 3 мл/кг/ч; обезвожена, диурез сохранён 4–6; анурия/олигурия 1–2; постобструктивный диурез до 7–12; кардиопатия 1.5–2 мл/кг/ч под контроль ЧДД. Сначала устранить обструкцию уретры! Степени: лёгкая 5.5–6.5, средняя 6.5–8.5, тяжёлая >8.5 ммоль/л.'}
@@ -412,12 +401,11 @@ let out='',sum=0;
 if(dilIdx>=0){
 const act=uRecipe.filter(r=>r.inc&&!r.diluent);
 let actSum=0;const lines=[];
-act.forEach(r=>{const v=r.base/baseTotal*V;actSum+=v;lines.push(r.name+': <b>'+r2(v)+' мл</b> ('+r2(r.base/baseTotal)+' мл на 1 мл болтушки)')});
+act.forEach(r=>{const v=r.base/baseTotal*V;actSum+=v;lines.push(r.name+': <b>'+r2(v)+'мл</b>')});
 const dilV=V-actSum;
 if(dilV<0){res5.innerHTML='<b>Ошибка:</b> объём включённых компонентов ('+r2(actSum)+' мл) больше нужного объёма. Увеличьте объём или уберите компоненты.';return}
-out=lines.join('<br>')+'<br>'+uRecipe[dilIdx].name+' (разбавитель): <b>'+r2(dilV)+' мл</b>';
+out=lines.join('<br>')+'<br>'+uRecipe[dilIdx].name+': <b>'+r2(dilV)+' мл</b>';
 sum=actSum+dilV;
-uRecipe.forEach(r=>{if(!r.inc&&!r.diluent)out+='<br><span style="color:#64748b">'+r.name+' — исключён (замещён разбавителем)</span>'});
 }else{
 const incR=uRecipe.filter(r=>r.inc);
 const incB=incR.reduce((s,r)=>s+(Number(r.base)||0),0);
