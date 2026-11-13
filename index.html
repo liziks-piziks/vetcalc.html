@@ -104,6 +104,7 @@ textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
 </div>
 <div class="result" id="res4">Выберите ситуацию и введите данные.</div>
 </div>
+<div id="page5" class="tab-page">
 <label>Нужный объём капель, мл<input id="uVol" type="number" min="1" step="0.5" value="10" inputmode="decimal"></label>
 <div id="uRows"></div>
 <button id="uAdd" type="button" style="margin-top:10px;padding:10px 14px;border:0;border-radius:8px;background:#2563eb;color:#fff;cursor:pointer">+ добавить компонент</button>
@@ -392,17 +393,16 @@ let out='',sum=0;
 if(dilIdx>=0){
 const act=uRecipe.filter(r=>r.inc&&!r.diluent);
 let actSum=0;const lines=[];
-act.forEach(r=>{const v=r.base/baseTotal*V;actSum+=v;lines.push(r.name+': <b>'+r2(v)+'мл</b>')});
+act.forEach(r=>{const v=r.base/baseTotal*V;actSum+=v;lines.push(r.name+': <b>'+r2(v)+' мл</b>')});
 const dilV=V-actSum;
 if(dilV<0){res5.innerHTML='<b>Ошибка:</b> объём включённых компонентов ('+r2(actSum)+' мл) больше нужного объёма. Увеличьте объём или уберите компоненты.';return}
-out=lines.join('<br>')+'<br>'+uRecipe[dilIdx].name+': <b>'+r2(dilV)+' мл</b>';
+out=lines.join('<br>')+'<br>'+uRecipe[dilIdx].name+': <b>'+r2(dilV)+'мл</b>';
 sum=actSum+dilV;
 }else{
 const incR=uRecipe.filter(r=>r.inc);
 const incB=incR.reduce((s,r)=>s+(Number(r.base)||0),0);
 if(incB<=0){res5.textContent='Нет включённых компонентов.';return}
 incR.forEach(r=>{const v=r.base/incB*V;sum+=v;out+=(out?'<br>':'')+r.name+': <b>'+r2(v)+' мл</b>'});
-out+='<br><span style="color:#64748b">Без разбавителя: компоненты масштабированы пропорционально.</span>';
 }
 out+='<br>Проверка: итого = <b>'+r2(sum)+' мл</b>';
 res5.innerHTML=out;
