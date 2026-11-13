@@ -381,16 +381,12 @@ const bs=document.createElement('input');bs.type='number';bs.min='0';bs.step='0.
 const lInc=document.createElement('label');lInc.style.cssText='margin:0;font-weight:normal;font-size:14px;display:flex;gap:4px;align-items:center';
 const inc=document.createElement('input');inc.type='checkbox';inc.checked=r.inc;inc.style.width='auto';inc.disabled=r.diluent;
 lInc.appendChild(inc);lInc.appendChild(document.createTextNode('входит'));
-const lDil=document.createElement('label');lDil.style.cssText=lInc.style.cssText;
-const dil=document.createElement('input');dil.type='checkbox';dil.checked=r.diluent;dil.style.width='auto';
-lDil.appendChild(dil);lDil.appendChild(document.createTextNode('разбавитель'));
 const del=document.createElement('button');del.type='button';del.textContent='×';del.style.cssText='border:0;background:#fee2e2;color:#b91c1c;border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:16px';
 nm.addEventListener('input',()=>{r.name=nm.value;calcU()});
 bs.addEventListener('input',()=>{r.base=Number(bs.value)||0;calcU()});
 inc.addEventListener('change',()=>{r.inc=inc.checked;calcU()});
-dil.addEventListener('change',()=>{if(dil.checked){uRecipe.forEach(x=>x.diluent=false);r.diluent=true;r.inc=true}else{r.diluent=false}renderU();calcU()});
 del.addEventListener('click',()=>{uRecipe.splice(i,1);renderU();calcU()});
-row.appendChild(nm);row.appendChild(bs);row.appendChild(lInc);row.appendChild(lDil);row.appendChild(del);
+row.appendChild(nm);row.appendChild(bs);row.appendChild(lInc);row.appendChild(del);
 uRows.appendChild(row);
 });
 }
