@@ -314,7 +314,7 @@ selectI(0);
 
 /* ===== ВКЛАДКА 4: ЭЛЕКТРОЛИТЫ ===== */
 const eSit=document.getElementById('eSit'),eWeight=document.getElementById('eWeight'),eSpecies=document.getElementById('eSpecies'),eK=document.getElementById('eK'),eKT=document.getElementById('eKT'),eNaCur=document.getElementById('eNaCur'),eNaT=document.getElementById('eNaT'),eHydr=document.getElementById('eHydr'),eCaD=document.getElementById('eCaD'),eKSel=document.getElementById('eKSel'),eFlask=document.getElementById('eFlask'),eRate4=document.getElementById('eRate'),eHours=document.getElementById('eHours'),eMgD=document.getElementById('eMgD'),eSol=document.getElementById('eSol'),res4=document.getElementById('res4');
-const vis={hypoK:['gK','gKT','gHours','gRate'],hyperK:[],hypoCa:['gSpecies','gHydr','gCaD','gFlask'],hyperCa:['gKSel','gFlask'],soda:['gHours'],hypoNa:['gNaCur','gNaT','gSol'],hyperNa:['gNaCur','gNaT','gSol'],hypoMg:['gMgD','gFlask','gRate'],hyperMg:[]};
+const vis={hypoK:['gK','gKT','gHours'],hyperK:[],hypoCa:['gSpecies','gHydr','gCaD','gFlask'],hyperCa:['gKSel','gFlask'],soda:['gHours'],hypoNa:['gNaCur','gNaT','gSol'],hyperNa:['gNaCur','gNaT','gSol'],hypoMg:['gMgD','gFlask','gRate'],hyperMg:[]};
 function eShow(){const s=eSit.value;['gK','gKT','gNaCur','gNaT','gHydr','gCaD','gKSel','gFlask','gRate','gHours','gMgD','gSol','gSpecies'].forEach(id=>{document.getElementById(id).style.display=vis[s].indexOf(id)>=0?'block':'none'});eCalc()}
 function eCalc(){const s=eSit.value,kg=Number(eWeight.value);
 if(!kg||kg<=0){res4.textContent='Введите массу тела.';return}
@@ -323,9 +323,9 @@ if(s==='hypoK'){const K=Number(eK.value),KT=Number(eKT.value)||3.5;
 if(!K){res4.textContent='Введите текущий калий крови.';return}
 if(KT<=K){res4.textContent='Целевой калий должен быть выше текущего.';return}
 const def=(KT-K)*kg*0.3,kclMl=def/0.54,maxM=0.5*kg,maxMl=maxM/0.54,minH=kclMl/maxMl;
-const T=Math.max(Number(eHours.value)||12,minH),P=Number(eRate4.value)||10,vol=P*T,conc=vol>0?def/(vol/1000):0,rateKcl=kclMl/T;
-if(vol<kclMl){res4.innerHTML='<b>Ошибка:</b> объём '+r1(vol)+' мл меньше объёма KCl ('+r1(kclMl)+' мл). Увеличьте скорость или время.';return}
-out='Дефицит до K '+KT+': <b>'+r2(def)+' мЭкв</b> (( '+KT+' − '+K+' ) × '+kg+' кг × 0.3)<br>Из ампулы KCl 4%: <b>'+r1(kclMl)+' мл</b><br>Максимум: '+r2(maxM)+' мЭкв/ч = '+r1(maxMl)+' мл/ч KCl; минимальное время <b>'+r1(minH)+' ч</b><br>Ваша схема: '+r1(T)+' ч при '+P+' мл/ч → объём <b>'+r1(vol)+' мл</b>, концентрация <b>'+r1(conc)+' мЭкв/л</b> '+(conc<=60?'(ОК ≤60)':'(>60 — увеличьте объём!)')+'<br>Скорость KCl: <b>'+r1(rateKcl)+' мл/ч</b> '+(rateKcl<=maxMl?'(в пределах максимума)':'— ПРЕВЫШАЕТ 0.5 ммоль/кг/ч!')+'<br>Приготовление: KCl '+r1(kclMl)+' мл + изотоник '+r1(vol-kclMl)+' мл';}
+const Treq=Number(eHours.value)||12,T=Math.max(Treq,minH),autoT=T>Treq;
+const vol=def*1000/60,pump=vol/T,rateKcl=kclMl/T,iso=vol-kclMl;
+out='Дефицит до K '+KT+': <b>'+r2(def)+' мЭкв</b> (( '+KT+' − '+K+' ) × '+kg+' кг × 0.3)<br>Из ампулы KCl 4%: <b>'+r1(kclMl)+' мл</b><br>Безопасный объём раствора (конц 60 мЭкв/л): <b>'+r1(vol)+' мл</b><br>Скорость инфузомата: <b>'+r2(pump)+' мл/ч</b><br>Скорость KCl: <b>'+r2(rateKcl)+' мл/ч</b> ('+r2(rateKcl*0.54)+' мЭкв/ч, лимит '+r2(maxM)+' мЭкв/ч)<br>Время: <b>'+r1(T)+' ч</b>'+(autoT?' <span style="color:#b91c1c">(авто: минимум '+r1(minH)+' ч)</span>':'')+'<br>Приготовление: KCl '+r1(kclMl)+' мл + изотоник '+r1(iso)+' мл';}
 else if(s==='hyperK'){out='1) Кальция глюконат 10%: <b>'+r1(0.5*kg)+'–'+r1(1*kg)+' мл</b> в/в >20 мин, развести в физрастворе, под ЭКГ<br>2) Инсулин короткий: <b>'+r2(0.25*kg)+'–'+r2(0.5*kg)+' ЕД</b> в/в<br>3) Декстроза: <b>'+r1(1*0.25*kg)+'–'+r1(2*0.5*kg)+' г</b> (1–2 г на 1 ЕД), развести до 5–20%, затем ИПС 2.5–5% декстрозы 4–6 ч<br>4) ИПС изотоником по статусу';}
 else if(s==='hypoCa'){const dCa=Number(eCaD.value),flask=Number(eFlask.value)||500,hydr=eHydr.value,sp=eSpecies.value;
 let totRate;if(hydr==='0')totRate=(sp==='dog')?3:2;else if(hydr==='56')totRate=(sp==='dog')?5.5:4;else totRate=1.75;
