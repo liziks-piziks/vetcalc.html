@@ -65,7 +65,7 @@ textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
 </label>
 <div class="grid">
 <label>Масса тела, кг<input id="ipsWeight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 3"></label>
-<label>Целевая доза (ед. см. в названии)<input id="ipsDose" type="number" min="0" step="0.01" inputmode="decimal"></label>
+<label><span id="ipsDoseTxt">Целевая доза</span><input id="ipsDose" type="number" min="0" step="0.01" inputmode="decimal"></label>
 <label>Концентрация ампулы<input id="ipsConc" type="number" min="0" step="0.01" inputmode="decimal"></label>
 <label>Объём шприца/флакона, мл<input id="ipsSyringe" type="number" min="1" step="1" inputmode="decimal" value="20"></label>
 </div>
@@ -264,9 +264,9 @@ selectB(0);
 const ipsDrugs=[
 {name:'Норадреналин 1 мг/мл',dose:0.1,conc:1,unit:'mcg/kg/min',note:'0.1 мкг/кг/мин '},
 {name:'Адреналин 1 мг/мл',dose:0.05,conc:1,unit:'mcg/kg/min',note:'0.05 мкг/кг/мин'},
-{name:'Лидокаин 20 мг/мл (ЖТ, ФЖ, экстрасистолы)',dose:25,conc:20,unit:'mcg/kg/min',note:'Собаки: сначала болюс - 2 мг/кг, затем ИПС - 25–100 мкг/кг/мин. Кошки: сначала болюс 0,25 мг/мл, затем ИПС - 10-40 мкг/кг/мин.'},
-{name:'Лидокаин 20 мг/мл (собаки)',dose:30,conc:20,unit:'mcg/kg/min',note:'25–100 мкг/кг/мин.'},
-{name:'Лидокаин 20 мг/мл (кошки)',dose:20,conc:20,unit:'mcg/kg/min',note:'10–40 мкг/кг/мин.'},
+{name:'Лидокаин 20 мг/мл — собаки, мкг/кг/мин (ЖТ, ФЖ, экстрасистолы)',dose:30,conc:20,unit:'mcg/kg/min',note:'Собаки: сначала болюс 2 мг/кг в/в медленно, затем ИПС 25–100 мкг/кг/мин. Кошки: болюс 0.25–0.5 мг/кг, затем ИПС 10–40 мкг/кг/мин.'},
+{name:'Лидокаин 20 мг/мл — собаки, мкг/кг/мин',dose:30,conc:20,unit:'mcg/kg/min',note:'25–100 мкг/кг/мин после болюса 2 мг/кг в/в медленно.'},
+{name:'Лидокаин 20 мг/мл — кошки, мкг/кг/мин',dose:20,conc:20,unit:'mcg/kg/min',note:'10–40 мкг/кг/мин после болюса 0.25–0.5 мг/кг медленно.'},
 {name:'Ондансетрон 2 мг/мл',dose:0.5,conc:2,unit:'mg/kg/day',note:'0.5 мг/кг/сут.'},
 {name:'Фуросемид 10 мг/мл',dose:1,conc:10,unit:'mg/kg/h',note:'1 мг/кг/ч. После болюса 1 мг/кг.'},
 {name:'KCl 4% (0.54 мЭкв/мл)',dose:0.5,conc:0.54,unit:'mEq/kg/h',note:'0.5 мЭкв/кг/ч.'},
@@ -293,7 +293,7 @@ ipsDrugInput.addEventListener('blur',()=>setTimeout(()=>ipsDrugList.classList.re
 ipsDrugList.addEventListener('mousedown',e=>{const t=e.target.closest('.cb-item');if(t&&t.dataset.i!==undefined){e.preventDefault();selectI(Number(t.dataset.i))}});
 ipsDrugList.addEventListener('mouseover',e=>{ipsDrugList.querySelectorAll('.cb-item.hl').forEach(el=>el.classList.remove('hl'));const t=e.target.closest('.cb-item');if(t)t.classList.add('hl')});
 ipsDrugInput.addEventListener('keydown',e=>{const items=ipsDrugList.querySelectorAll('.cb-item[data-i]');if(e.key==='Escape'){ipsDrugList.classList.remove('open');return}if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!ipsDrugList.classList.contains('open'))renderIList();let idx=-1;items.forEach((el,j)=>{if(el.classList.contains('hl'))idx=j});let n=idx+(e.key==='ArrowDown'?1:-1);if(n<0)n=items.length-1;if(n>=items.length)n=0;if(items[n]){ipsDrugList.querySelectorAll('.cb-item.hl').forEach(el=>el.classList.remove('hl'));items[n].classList.add('hl');items[n].scrollIntoView({block:'nearest'})}return}if(e.key==='Enter'){e.preventDefault();const hl=ipsDrugList.querySelector('.cb-item.hl');if(hl&&hl.dataset.i!==undefined){selectI(Number(hl.dataset.i))}else if(items.length){selectI(Number(items[0].dataset.i))}}});
-function ipsSet(){const d=ipsDrugs[iCur];if(!d){ipsNote.value='';res3.textContent='Препарат не выбран.';return}ipsDose.value=d.dose;ipsConc.value=d.conc||'';ipsNote.value=d.note||'';ipsCalc()}
+function ipsSet(){const d=ipsDrugs[iCur];if(!d){ipsNote.value='';res3.textContent='Препарат не выбран.';return}ipsDose.value=d.dose;ipsConc.value=d.conc||'';ipsNote.value=d.note||'document.getElementById('ipsDoseTxt').textContent='Целевая доза, '+({'mcg/kg/min':'мкг/кг/мин','mcg/kg/h':'мкг/кг/ч','mg/kg/h':'мг/кг/ч','mg/kg/day':'мг/кг/сут','mEq/kg/h':'мЭкв/кг/ч','ED/kg/h':'ЕД/кг/ч','ml/kg/h':'мл/кг/ч'}[d.unit]||'');';ipsCalc()}
 function ipsCalc(){const d=ipsDrugs[iCur];if(!d){res3.textContent='Препарат не выбран.';return}const kg=Number(ipsWeight.value),dose=Number(ipsDose.value),conc=Number(ipsConc.value),syr=Number(ipsSyringe.value),rate=Number(ipsRate.value);
 if(!kg||kg<=0){res3.textContent='Введите массу тела.';return}
 if(!dose||dose<=0){res3.textContent='Введите целевую дозу.';return}
@@ -359,7 +359,7 @@ eNote.textContent='Дефицит 1–2 сут: 0.03–0.04 мЭкв/кг/ч. П
 else if(s==='hyperMg'){out='1) Кальция глюконат 10%: <b>'+r1(0.5*kg)+'–'+r1(1*kg)+' мл</b> в/в медленно за 15–30 мин (при шоке/аритмии)<br>2) Физостигмин: <b>'+r2(0.02*kg)+' мг</b> в/в (0.02 мг/кг) — только вместе с кальцием<br>3) Фуросемид в/в — строго после восстановления ОЦК<br>Стабильным по сердцу: сразу инфузия 0.9% NaCl (если нет анурии и СН)';
 eNote.textContent='Пороги: собаки общий Mg >2.51 мг/дл (своб. >0.6 ммоль/л); кошки общий >2.99 мг/дл (своб. >0.7 ммоль/л).'}
 res4.innerHTML=out}
-[eSit,eWeight,eSpecies,eK,eNaCur,eNaT,eHydr,eCaD,eKSel,eFlask,eRate4,eHours,eMgD,eSol].forEach(el=>{el.addEventListener('input',eCalc);el.addEventListener('change',eShow)});
+document.querySelectorAll('#page4 input,#page4 select').forEach(el=>{el.addEventListener('input',eCalc);el.addEventListener('change',eShow)});
 eShow();
 /* ===== ВКЛАДКА 5: УШНЫЕ КАПЛИ ===== */
 let uRecipe=[
