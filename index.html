@@ -66,10 +66,10 @@ textarea{min-height:70px;resize:vertical;font-size:14px;font-weight:normal}
 <div class="grid">
 <label>Масса тела, кг<input id="ipsWeight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Например, 3"></label>
 <label><span id="ipsDoseTxt">Целевая доза</span><input id="ipsDose" type="number" min="0" step="0.01" inputmode="decimal"></label>
-<label>Концентрация ампулы<input id="ipsConc" type="number" min="0" step="0.01" inputmode="decimal"></label>
-<label>Объём шприца/флакона, мл<input id="ipsSyringe" type="number" min="1" step="1" inputmode="decimal" value="20"></label>
+<label id="gIpsConc">Концентрация ампулы<input id="ipsConc" type="number" min="0" step="0.01" inputmode="decimal"></label>
+<label id="gIpsSyringe">Объём шприца/флакона, мл<input id="ipsSyringe" type="number" min="1" step="1" inputmode="decimal" value="20"></label>
 </div>
-<label>Скорость инфузомата, мл/ч<input id="ipsRate" type="number" min="0.1" step="0.1" inputmode="decimal" value="2"></label>
+<label id="gIpsRate">Скорость инфузомата, мл/ч<input id="ipsRate" type="number" min="0.1" step="0.1" inputmode="decimal" value="2"></label>
 <label>Примечание<textarea id="ipsNote" readonly></textarea></label>
 <div class="result" id="res3">Введите данные для расчёта ИПС.</div>
 </div>
@@ -275,8 +275,8 @@ const ipsDrugs=[
 {name:'Кальция глюконат 10%',dose:0.5,conc:0,unit:'ml/kg/h',note:'0.5–1 мл/кг/ч на 3–4 ч (разведение 1:5 или 1:10); после болюса 0.25–0.5 мл/кг/ч в почасовой потребности NaCl.'},
 {name:'NaCl 3%',dose:1,conc:0,unit:'ml/kg/h',note:'Гипонатриемия: 0,1-1 мл/кг/ч. При ЧМТ, острой гипонатриемии: 1 мл/кг/ч.'},
 {name:'Метоклопрамид 5 мг/мл',dose:1,conc:5,unit:'mg/kg/day',note:'1 мг/кг/сут.'},
-{name:'Пропофол 10 мг/мл',dose:0.1,conc:10,unit:'mg/kg/min',note:'0.1–0.5 мг/кг/мин.'},
-{name:'Пропофол 20 мг/мл',dose:0.1,conc:20,unit:'mg/kg/min',note:'0.1–0.5 мг/кг/мин.'},
+{name:'Пропофол 10 мг/мл',dose:0.1,conc:10,unit:'mg/kg/min',note:'0.1–0.5 мг/кг/мин, неразведённый.'},
+{name:'Пропофол 20 мг/мл',dose:0.1,conc:20,unit:'mg/kg/min',note:'0.1–0.5 мг/кг/мин, неразведённый.'},
 {name:'Золетил 50',dose:0.25,conc:50,unit:'mg/kg/h',note:'0,25-2 мг/кг/ч.'},
 {name:'Золетил 100',dose:0.25,conc:100,unit:'mg/kg/h',note:'0,25-2 мг/кг/ч.'},
 {name:'Допамин 40 мг/мл (шприц 20 мл)',dose:1,conc:40,syr:20,unit:'mcg/kg/min',note:'Кошки: 1-5 мкг/кг/мин. Собаки: 2-10 мкг/кг/мин'},
@@ -294,24 +294,27 @@ ipsDrugInput.addEventListener('blur',()=>setTimeout(()=>ipsDrugList.classList.re
 ipsDrugList.addEventListener('mousedown',e=>{const t=e.target.closest('.cb-item');if(t&&t.dataset.i!==undefined){e.preventDefault();selectI(Number(t.dataset.i))}});
 ipsDrugList.addEventListener('mouseover',e=>{ipsDrugList.querySelectorAll('.cb-item.hl').forEach(el=>el.classList.remove('hl'));const t=e.target.closest('.cb-item');if(t)t.classList.add('hl')});
 ipsDrugInput.addEventListener('keydown',e=>{const items=ipsDrugList.querySelectorAll('.cb-item[data-i]');if(e.key==='Escape'){ipsDrugList.classList.remove('open');return}if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!ipsDrugList.classList.contains('open'))renderIList();let idx=-1;items.forEach((el,j)=>{if(el.classList.contains('hl'))idx=j});let n=idx+(e.key==='ArrowDown'?1:-1);if(n<0)n=items.length-1;if(n>=items.length)n=0;if(items[n]){ipsDrugList.querySelectorAll('.cb-item.hl').forEach(el=>el.classList.remove('hl'));items[n].classList.add('hl');items[n].scrollIntoView({block:'nearest'})}return}if(e.key==='Enter'){e.preventDefault();const hl=ipsDrugList.querySelector('.cb-item.hl');if(hl&&hl.dataset.i!==undefined){selectI(Number(hl.dataset.i))}else if(items.length){selectI(Number(items[0].dataset.i))}}});
-function ipsSet(){const d=ipsDrugs[iCur];if(!d){ipsNote.value='';res3.textContent='Препарат не выбран.';return}ipsDose.value=d.dose;ipsConc.value=d.conc||'';if(d.syr)ipsSyringe.value=d.syr;ipsNote.value=d.note||'';ipsNote.value=d.note||'';document.getElementById('ipsDoseTxt').textContent='Целевая доза, '+({'mcg/kg/min':'мкг/кг/мин','mcg/kg/h':'мкг/кг/ч','mg/kg/h':'мг/кг/ч','mg/kg/day':'мг/кг/сут','mEq/kg/h':'мЭкв/кг/ч','ED/kg/h':'ЕД/кг/ч','mg/kg/min':'мг/кг/мин','ml/kg/h':'мл/кг/ч'}[d.unit]||'');ipsCalc()}function ipsCalc(){const d=ipsDrugs[iCur];if(!d){res3.textContent='Препарат не выбран.';return}const kg=Number(ipsWeight.value),dose=Number(ipsDose.value),conc=Number(ipsConc.value),syr=Number(ipsSyringe.value),rate=Number(ipsRate.value);
+function ipsSet(){const d=ipsDrugs[iCur];if(!d){ipsNote.value='';res3.textContent='Препарат не выбран.';return}ipsDose.value=d.dose;ipsConc.value=d.conc||'';if(d.syr)ipsSyringe.value=d.syr;ipsNote.value=d.note||'';document.getElementById('ipsDoseTxt').textContent='Целевая доза, '+({'mcg/kg/min':'мкг/кг/мин','mcg/kg/h':'мкг/кг/ч','mg/kg/h':'мг/кг/ч','mg/kg/day':'мг/кг/сут','mEq/kg/h':'мЭкв/кг/ч','ED/kg/h':'ЕД/кг/ч','mg/kg/min':'мг/кг/мин','ml/kg/h':'мл/кг/ч'}[d.unit]||'');const m1=(d.unit==='ml/kg/h'||d.unit==='mg/kg/min');const hc=document.getElementById('gIpsConc'),hs=document.getElementById('gIpsSyringe'),hr=document.getElementById('gIpsRate');if(hc)hc.style.display=m1?'none':'block';if(hs)hs.style.display=m1?'none':'block';if(hr)hr.style.display=m1?'none':'block';ipsCalc()}
+function ipsCalc(){const d=ipsDrugs[iCur];if(!d){res3.textContent='Препарат не выбран.';return}const kg=Number(ipsWeight.value),dose=Number(ipsDose.value);
 if(!kg||kg<=0){res3.textContent='Введите массу тела.';return}
 if(!dose||dose<=0){res3.textContent='Введите целевую дозу.';return}
-if(!rate||rate<=0){res3.textContent='Введите скорость инфузомата.';return}
 if(d.unit==='ml/kg/h'){const pump=dose*kg;res3.innerHTML='Скорость на инфузомате: <b>'+r1(pump)+' мл/ч</b> ('+dose+' мл/кг/ч × '+kg+' кг)<br>За 24 ч: <b>'+r1(pump*24)+' мл</b>';return}
+if(d.unit==='mg/kg/min'){const c=Number(d.conc);if(!(c>0)){res3.textContent='Не указана концентрация ампулы.';return}const perHour=dose*kg*60,pump=perHour/c;res3.innerHTML='Скорость на инфузомате: <b>'+r2(pump)+' мл/ч</b> ('+dose+' мг/кг/мин × '+kg+' кг × 60 / '+c+' мг/мл)<br>Почасовая доза: <b>'+r2(perHour)+' мг/ч</b><br>За 24 ч: <b>'+r1(pump*24)+' мл</b> ('+r1(perHour*24)+' мг)';return}
+const conc=Number(ipsConc.value),syr=Number(ipsSyringe.value),rate=Number(ipsRate.value);
+if(!rate||rate<=0){res3.textContent='Введите скорость инфузомата.';return}
 let perHour;
 if(d.unit==='mcg/kg/min'){perHour=(dose*kg*60)/1000}
 else if(d.unit==='mcg/kg/h'){perHour=(dose*kg)/1000}
-else if(d.unit==='mg/kg/day'){perHour=(dose*kg)/24} else if(d.unit==='mg/kg/min'){perHour=dose*kg*60}
+else if(d.unit==='mg/kg/day'){perHour=(dose*kg)/24}
 else{perHour=dose*kg}
 if(!(conc>0)){res3.textContent='Введите концентрацию ампулы.';return}
 const hours=syr/rate,total=perHour*hours,ampMl=total/conc,dil=syr-ampMl;
 if(ampMl>syr){res3.innerHTML='<b>Ошибка:</b> нужный объём препарата ('+fmtVol(ampMl)+' мл) больше объёма шприца. Увеличьте шприц или скорость.';return}
-const uName={'mcg/kg/min':'мг','mcg/kg/h':'мг','mg/kg/h':'мг','mg/kg/day':'мг','mEq/kg/h':'мЭкв','ED/kg/h':'ЕД','mg/kg/min':'мг'}[d.unit];
+const uName={'mcg/kg/min':'мг','mcg/kg/h':'мг','mg/kg/h':'мг','mg/kg/day':'мг','mEq/kg/h':'мЭкв','ED/kg/h':'ЕД'}[d.unit];
 res3.innerHTML='Потребность: <b>'+perHour.toFixed(3)+' '+uName+'/ч</b><br>Время работы шприца: <b>'+hours.toFixed(1)+' ч</b><br>Всего препарата: <b>'+total.toFixed(2)+' '+uName+'</b><br>Из ампулы: <b>'+fmtVol(ampMl)+' мл</b><br>Развести до '+syr+' мл: добавить <b>'+r1(dil)+' мл</b> NaCl 0.9% или глюкозы 5%<br>Скорость инфузомата: <b>'+rate+' мл/ч</b>'}
 [ipsWeight,ipsDose,ipsConc,ipsSyringe,ipsRate].forEach(el=>{el.addEventListener('input',ipsCalc);el.addEventListener('change',ipsCalc)});
 selectI(0);
-
+  
 /* ===== ВКЛАДКА 4: ЭЛЕКТРОЛИТЫ ===== */
 const eSit=document.getElementById('eSit'),eWeight=document.getElementById('eWeight'),eSpecies=document.getElementById('eSpecies'),eK=document.getElementById('eK'),eKT=document.getElementById('eKT'),eNaCur=document.getElementById('eNaCur'),eNaT=document.getElementById('eNaT'),eHydr=document.getElementById('eHydr'),eCaD=document.getElementById('eCaD'),eKSel=document.getElementById('eKSel'),eFlask=document.getElementById('eFlask'),eRate4=document.getElementById('eRate'),eHours=document.getElementById('eHours'),eMgD=document.getElementById('eMgD'),eSol=document.getElementById('eSol'),res4=document.getElementById('res4');
 const vis={hypoK:['gK','gKT','gHours'],hyperK:[],hypoCa:['gSpecies','gHydr','gCaD','gFlask'],hyperCa:['gKSel','gFlask'],soda:['gHours'],hypoNa:['gNaCur','gNaT','gSol'],hyperNa:['gNaCur','gNaT','gSol'],hypoMg:['gMgD','gFlask','gRate'],hyperMg:[]};
